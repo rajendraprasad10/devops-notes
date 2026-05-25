@@ -1,0 +1,263 @@
+VPC 
+
+AWS VPC Architecture Setup (Step-by-Step)
+
+This setup creates:
+
+VPC
+Public Subnet
+Private Subnet
+Internet Gateway (IGW)
+Public Route Table
+Private Route Table
+NAT Gateway
+NACL
+Web Server Security Group
+App Server Security Group
+
+
+================================================
+
+
+Final Architecture
+                     Internet
+                         │
+                    Internet Gateway
+                         │
+                ┌────────┴────────┐
+                │                 │
+        Public Route Table        │
+                │                 │
+        ┌───────┴────────┐        │
+        │ Public Subnet  │        │
+        │ 10.0.1.0/24    │        │
+        │                │        │
+        │  Web Server    │        │
+        │   EC2          │        │
+        └───────┬────────┘        │
+                │                 │
+          NAT Gateway             │
+                │                 │
+        Private Route Table       │
+                │                 │
+        ┌───────┴────────┐        │
+        │ Private Subnet │        │
+        │ 10.0.2.0/24    │        │
+        │                │        │
+        │ App Server EC2 │
+        └────────────────┘
+
+=======================================================
+
+
+Step 1 — Create VPC
+
+        Go to:
+
+            AWS Console → VPC → Create VPC
+
+        Configuration
+
+        Field                   Value
+
+        Name                    demo-vpc
+        IPv4 CIDR               10.0.0.0/16
+
+
+Step 2 — Create Public Subnet
+
+        VPC → Subnets → Create subnet
+
+        Field           Value
+
+        Name            public-subnet
+        CIDR            10.0.1.0/24
+        AZ              ap-south-2a
+
+        Enable:
+
+            Auto-assign public IPv4
+
+            This is IMPORTANT.
+
+
+Step 3 — Create Private Subnet
+
+        Field   Value
+
+        Name    private-subnet
+        CIDR    10.0.2.0/24
+        AZ      ap-south-1a
+
+        Do NOT enable public IP.
+
+
+Step 4 — Create Internet Gateway (IGW)
+
+        VPC → Internet Gateways → Create
+
+       Field   Value
+        Name    demo-igw
+
+        After creation:
+
+                Actions → Attach to VPC
+
+        Attach to:
+
+                demo-vpc
+
+
+Step 5 — Create Public Route Table
+
+        VPC → Route Tables → Create
+
+  Field   Value
+   Name    public-rt
+
+     Add Route:
+
+        Destination: 0.0.0.0/0
+        
+        Target: Internet Gateway (demo-igw)
+
+     Associate:
+
+        public-subnet
+
+
+Step 6 — Create Elastic IP
+
+        VPC → Elastic IPs → Allocate
+
+        This is needed for NAT Gateway.
+
+
+Step 7 — Create NAT Gateway
+
+        VPC → NAT Gateways → Create
+
+  Field            Value
+   Name           demo-nat
+   Subnet         public-subnet
+   Elastic IP     select allocated EIP
+
+Why public subnet?
+
+        Because NAT needs internet access.
+
+
+Step 8 — Create Private Route Table
+
+        VPC → Route Tables → Create
+
+  Field   Value
+   Name    private-rt
+
+Add Route:
+
+  Destination: 0.0.0.0/0
+  Target: NAT Gateway
+
+Associate:
+
+   private-subnet
+
+
+
+Step 9 — Create NACL
+
+        VPC → Network ACLs → Create
+
+  Field   Value
+   Name    demo-nacl
+
+Associate with:
+
+    public-subnet
+    private-subnet
+
+
+
+Step 10 — Configure NACL Rules
+
+        Inbound Rules
+
+        Rule    Type    Port    Source  Allow/Deny
+        100     HTTP    80      0.0.0.0/0       ALLOW
+        110     HTTPS   443     0.0.0.0/0       ALLOW
+        120     SSH     22      YOUR-IP/32      ALLOW
+        *       ALL     ALL     ALL     DENY
+
+
+        Outbound Rules
+
+        Rule    Type            Port    Destination     Allow/Deny
+        100     ALL Traffic     ALL     0.0.0.0/0         ALLOW
+
+
+Step 11 — Create Web Server Security Group
+
+        VPC → Security Groups → Create
+
+Field   Value
+   Name    web-sg
+
+Inbound Rules
+
+        Type    Port    Source
+        HTTP    80      0.0.0.0/0
+        HTTPS   443     0.0.0.0/0
+        SSH     22      Your-IP
+
+Outbound:
+
+     Allow All
+
+
+
+Step 12 — Create App Server Security Group
+
+        Field   Value
+         Name    app-sg
+
+
+        Inbound Rules
+
+        Type                    Port    Source
+        Custom TCP              8000    web-sg
+        SSH                     22      web-sg
+
+Meaning:
+
+        ONLY web server can talk to app server.
+
+        No public internet access.
+
+Outbound:
+
+        Allow All
+
+
+Step 13 — Launch EC2 Web Server
+
+Network Settings
+
+   Field                Value
+     Subnet           public-subnet
+     Auto Public IP   ENABLE
+      SG              web-sg
+
+This server gets internet.
+
+
+Step 14 — Launch EC2 App Server
+
+        Field           Value
+           Subnet       private-subnet
+           Public IP    DISABLE
+           SG           app-sg
+
+     This server does NOT get internet directly.
+
+     Internet access works THROUGH NAT Gateway.
