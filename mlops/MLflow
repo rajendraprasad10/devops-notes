@@ -1,0 +1,389 @@
+Mlflow 
+
+24. Recommended Learning Path
+
+
+	MLflow Basics
+	    ↓
+	Tracking
+	    ↓
+	Artifacts
+	    ↓
+	Registry
+	    ↓
+	Serving
+	    ↓
+	Docker
+	    ↓
+	Kubernetes
+	    ↓
+	CI/CD
+	    ↓
+	Monitoring
+
+
+
+
+What is MLflow?
+
+MLflow is an open-source MLOps platform used to manage the complete machine learning lifecycle.
+
+It helps with:
+
+	Experiment tracking
+
+	Model versioning
+
+	Artifact storage
+
+	Model deployment
+
+
+------------------------------------------------------------------------------
+
+
+Why MLflow?
+
+Machine learning projects generate:
+
+Multiple experiments
+
+Different models
+
+Many datasets
+
+Training metrics
+
+Artifacts
+
+MLflow helps organize and manage all these efficiently.
+
+
+---------------------------------------------------------------------------------
+
+MLflow Lifecycle
+
+
+Train Model
+    ↓
+Track Experiment
+    ↓
+Store Artifacts
+    ↓
+Register Model
+    ↓
+Deploy Model
+    ↓
+Monitor
+
+
+-----------------------------------------------------------------------------------
+
+
+Core Components of MLflow
+
+Component			Purpose
+Tracking		Experiment tracking
+Projects		Reproducible projects
+Models		Standardized model packaging
+Registry	Model lifecycle management
+
+
+---------------------------------------------------------------------------------
+
+
+1. MLflow Tracking
+
+Most important feature.
+
+Used to track:
+
+	Parameters
+
+	Metrics
+	
+	Artifacts
+	
+	Tags
+	
+	Runtime details
+
+
+----------------------------------------------------------------------------------
+
+
+Example 
+
+
+import mlflow
+
+with mlflow.start_run():
+
+    mlflow.log_param(
+        "learning_rate",
+        0.01
+    )
+
+    mlflow.log_metric(
+        "accuracy",
+        0.95
+    )
+
+
+----------------------------------------------------------------------------------
+
+Common Metrics
+
+	Metric
+	accuracy
+	precision
+	recall
+	f1-score
+	loss
+
+--------------------------------------------------------------------------------
+
+Common Parameters
+
+	Parameter
+	learning_rate
+	batch_size
+	epochs
+	max_depth
+
+-------------------------------------------------------------------------------
+
+2. Artifacts in MLflow
+
+Artifacts are files generated during training.
+
+Examples:
+
+Artifact		Example
+Models		model.pkl
+Reports		report.txt
+Images		confusion_matrix.png
+Dataset		train.csv
+
+
+-------------------------------------------------------------------------------
+
+Example:
+
+Log Artifact
+
+mlflow.log_artifact(
+    "report.txt"
+)
+
+-------------------------------------------------------------------------------
+
+
+Artifact Storage:
+
+	Artifacts can be stored in:
+
+Storage:
+
+	Local filesystem
+
+	MinIO
+
+	Amazon S3
+
+	GCS
+
+	Azure Blob
+
+
+--------------------------------------------------------------------------------
+
+
+3. MLflow Model Registry
+
+Used for:
+
+	Model versioning
+
+	Lifecycle management
+	
+	Production promotion
+	
+	Rollbacks
+
+---------------------------------------------------------------------------------
+
+Model Lifecycle
+
+
+	None
+	 ↓
+	Staging
+	 ↓
+	Production
+	 ↓
+	Archived
+
+----------------------------------------------------------------------------------
+
+Register Model
+
+mlflow.register_model(
+    "runs:/RUN_ID/model",
+    "iris-model"
+)
+
+----------------------------------------------------------------------------------
+
+
+Benefits:
+
+Benefit
+
+	Easy rollback
+	Version control
+	Production management
+
+----------------------------------------------------------------------------------
+
+
+5. MLflow Models
+
+MLflow stores models in a standard format.
+
+
+-----------------------------------------------------------
+
+
+
+Supported Databases
+
+Database:
+
+SQLite     	local
+PostgreSQL 	production
+MySQL		production 
+
+
+-----------------------------------------------------------
+
+
+10. MLflow Architecture
+
+
+Local Setup:
+
+	MLflow
+	   ↓
+	SQLite
+	   ↓
+	Local Artifacts
+
+
+Production Setup:
+
+	MLflow Server
+	      ↓
+	PostgreSQL
+	      ↓
+	MinIO/S3
+
+------------------------------------------------------------------------
+
+
+12. Kubernetes in MLflow:
+
+Used for:
+
+	Scaling
+	High availability
+	Self-healing
+	Production deployments
+
+
+Kubernetes Resources:
+
+	Resource
+	Deployment
+	Service
+	Ingress
+	PVC
+	Secret
+
+
+-------------------------------------------------------------------
+
+13. CI/CD in MLflow
+
+Pipeline example:
+
+	Git Push
+	   ↓
+	Jenkins/GitHub Actions
+	   ↓
+	Train Model
+	   ↓
+	Track in MLflow
+	   ↓
+	Deploy
+
+
+----------------------------------------------------------------
+
+
+15. Security in MLflow
+
+	Security Areas
+
+	Area
+	
+	HTTPS/TLS
+	
+	Authentication
+	
+	RBAC
+	
+	Secrets
+	
+	IAM
+
+------------------------------------------------------
+
+DVC vs MLflow
+
+
+
+20. Enterprise MLflow Stack
+
+
+	Users
+	   ↓
+	MLflow Server
+	   ↓
+	PostgreSQL
+	   ↓
+	MinIO/S3
+	   ↓
+	Docker
+	   ↓
+	Kubernetes
+	   ↓
+	Monitoring
+
+--------------------------------------------------------------------
+
+21. Responsibilities of DevOps/MLOps Engineer
+
+Area			Responsibility
+
+
+MLflow			Deploy server
+PostgreSQL		Backend DB
+MinIO			Artifact storage
+Docker			Containers
+Kubernetes		Scaling
+CI/CD			Automation
+Monitoring		Observability
+
+
+-------------------------------------------------------------

@@ -1,0 +1,93 @@
+ 
+What is Sidecar Container?
+
+	A Sidecar container runs along with the main container in the same Pod.
+
+	👉 It runs continuously and supports the main container.
+
+🎯 Why we use Sidecar?
+
+	Logging (e.g., log collector)
+
+	Monitoring (Prometheus exporters)
+
+	Proxy (service mesh like Istio)
+
+	File sync or config reload
+
+
+👉 Both containers:
+
+	Start together
+
+	Share network & storage
+
+	Run simultaneously
+
+
+Example: 
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sidecar-demo
+spec:
+  containers:
+  - name: app
+    image: nginx
+    volumeMounts:
+    - name: shared-data
+      mountPath: /usr/share/nginx/html
+
+  - name: sidecar
+    image: busybox
+    command: ['sh', '-c', 'while true; do echo Hello > /data/index.html; sleep 5; done']
+    volumeMounts:
+    - name: shared-data
+      mountPath: /data
+
+  volumes:
+  - name: shared-data
+    emptyDir: {}
+
+
+ 🧪 How to Test Sidecar
+
+1. Deploy pod
+
+	kubectl apply -f sidecar.yaml
+
+2. Check running containers
+
+	kubectl get pods
+	kubectl describe pod sidecar-demo
+
+3. Check logs (sidecar container)
+
+	kubectl logs sidecar-demo -c sidecar
+
+4. Exec into main container
+
+	kubectl get all -n dev   take pod name and add in 
+
+	kubectl exec -it <podname> -n dev -c writer-sidecar -- /bin/sh
+
+5. Verify shared file
+
+	cat /usr/share/nginx/html/index.html
+
+
+
+Key Differences
+
+Feature			Init Container					Sidecar Container
+
+Execution		Runs before app						Runs with app
+
+Lifecycle		Runs once									Runs continuously 
+
+Purpose			Setup / initialization		Support main container
+
+Dependency	Must complete								Independent
+
+Example			DB check, migrations				Logging, proxy 

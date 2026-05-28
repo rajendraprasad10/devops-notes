@@ -1,0 +1,262 @@
+What is a Network Policy?
+
+A NetworkPolicy in Kubernetes is used to control traffic flow between Pods, Namespaces, and external networks.
+
+It acts like a firewall for Pods
+
+
+	Simple Definition
+
+
+NetworkPolicy = Security rules for Pod-to-Pod communication
+
+
+Why Do We Use Network Policies?
+
+Without NetworkPolicy:
+
+	All pods can talk to each other (default open network)
+
+With NetworkPolicy:
+
+	Restrict traffic (Zero Trust security)
+
+	Protect sensitive apps (DB, APIs)
+
+	Block unauthorized access
+
+
+Types of Traffic Control
+	
+	Type		Description
+	
+	Ingress		Incoming traffic to Pod
+	
+	Egress		Outgoing traffic from Pod
+
+Deny All Traffic
+
+
+	apiVersion: networking.k8s.io/v1
+	kind: NetworkPolicy
+	metadata:
+	  name: deny-all
+	  namespace: default
+	spec:
+	  podSelector: {}   # applies to all pods
+	  policyTypes:
+	  - Ingress
+	  - Egress
+
+	 Result:
+
+	No pod can send/receive traffic
+
+
+
+Example 3: Allow Traffic on Specific Port
+
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-http
+spec:
+  podSelector:
+    matchLabels:
+      app: web
+
+  ingress:
+  - ports:
+    - protocol: TCP
+      port: 80
+
+
+
+Only HTTP traffic allowed
+
+
+Important Commands
+
+
+
+Create Policy
+
+kubectl apply -f network-policy.yaml
+
+
+Get Policies
+
+kubectl get networkpolicies
+
+
+or
+
+kubectl get netpol
+
+
+Describe Policy
+
+kubectl describe netpol <name>
+
+Delete Policy
+
+kubectl delete netpol <name>
+
+Test Connectivity
+
+kubectl exec -it <pod> -- curl <target-pod-ip>
+
+	Used to verify allow/deny rules
+
+Key Concepts
+	podSelector
+
+Selects target pods
+	namespaceSelector
+
+Filters namespaces
+
+ipBlock
+
+Allow/deny external IPs
+	Important Note 
+
+	NetworkPolicy works only if:
+
+
+Your cluster uses a network plugin that supports it
+Calico ✅
+Cilium ✅
+
+
+Flannel ❌ (basic mode)
+
+
+🔹 Advantages
+
+✔ Strong security (Zero Trust)
+
+✔ Fine-grained control
+
+✔ Protects internal services
+
+
+
+🔹 Limitations
+
+❌ Requires supported CNI
+❌ Complex for large setups
+❌ Default allow until policy applied
+🔹 Real DevOps Scenario 
+
+
+
+👉 Microservices app:
+
+Frontend → Backend ✅
+Backend → Database ✅
+
+Frontend → Database ❌
+
+👉 Achieved using NetworkPolicy
+
+
+Example 1: Deny All Traffic
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all
+  namespace: default
+spec:
+  podSelector: {}   # applies to all pods
+  policyTypes:
+  - Ingress
+  - Egress
+
+👉 Result:
+
+No pod can send/receive traffic
+
+🔹 Example 2: Allow Only Specific App (Frontend → Backend)
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-frontend
+spec:
+  podSelector:
+    matchLabels:
+      app: backend
+
+  policyTypes:
+  - Ingress
+
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: frontend
+
+Only frontend pods can access backend
+
+🔹 Example 3: Allow Traffic on Specific Port
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-http
+spec:
+  podSelector:
+    matchLabels:
+      app: web
+
+  ingress:
+  - ports:
+    - protocol: TCP
+      port: 80
+
+Only HTTP traffic allowed
+
+🔹 Example 4: Allow Namespace-Based Access
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-namespace
+spec:
+  podSelector:
+    matchLabels:
+      app: db
+
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: prod
+
+Only pods from prod namespace can access DB
+
+🔹 Example 5: Egress Policy (Allow External Access)
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-external
+spec:
+  podSelector:
+    matchLabels:
+      app: app
+
+  policyTypes:
+  - Egress
+
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+
+Allows outgoing traffic to internet
+
+

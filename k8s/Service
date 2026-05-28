@@ -1,0 +1,228 @@
+Service
+
+What is a Kubernetes Service
+
+	In Kubernetes, a Service is an object that exposes a group of Pods and provides a stable network endpoint to access them.
+
+Pods in Kubernetes are temporary (ephemeral):
+
+	Pods can restart
+
+	Pods can get new IP addresses
+
+	Pods can be rescheduled to different nodes
+
+	A Service solves this problem by providing:
+
+		Stable IP address
+
+		Stable DNS name
+
+service Types
+=============
+1. ClusterIP
+2. NodePort
+3. Load balancer
+
+
+Why We Use Kubernetes Services
+
+Without Service:
+
+	Client → Pod1 (IP: 10.1.1.5)
+
+If Pod restarts:
+
+	Pod1 → new IP (10.1.3.9)
+	Client connection breaks 
+
+with service 
+
+	Client
+	   ↓
+	Service (ClusterIP)
+	   ↓
+	Pod1
+	Pod2
+	Pod3
+
+Benefits:
+
+	Stable IP
+	Load balancing
+	Service discovery
+	Decoupling between pods
+
+=========================================================
+
+
+Architecture:
+
+          Client
+            │
+            ▼
+        Service
+       (ClusterIP)
+            │
+     ┌──────┼──────┐
+     ▼      ▼      ▼
+   Pod1   Pod2   Pod3
+
+
+ Service Example
+Pod:
+	apiVersion: v1
+	kind: Pod
+	metadata:
+	  name: nginx-pod
+	  labels:
+	    app: web
+	spec:
+	  containers:
+	  - name: nginx
+	    image: nginx
+
+Service:
+
+	apiVersion: v1
+	kind: Service
+	metadata:
+	  name: web-service
+	spec:
+	  selector:
+	    app: web
+	  ports:
+	  - port: 80
+	    targetPort: 80
+
+by default it is going with the service ip 
+
+================================================================================
+
+Types of Kubernetes Services
+1️ClusterIP (Most Common)
+
+Default service type.
+
+	Accessible inside the cluster only.
+
+		Service IP: 10.96.1.10
+
+	Example:
+
+	spec:
+	  type: ClusterIP
+
+	Use case:
+
+		Backend services
+
+		Database services
+
+		Internal APIs
+
+
+NodePort: 
+
+Exposes service on Node IP + Port.
+
+	Example:
+
+	spec:
+	  type: NodePort
+
+	Access:
+
+		NodeIP:30007
+
+	Example:
+
+		192.168.1.20:30007
+
+LoadBalancer
+
+	Creates external load balancer in cloud environments.
+
+Example in:
+
+	Amazon Web Services
+
+	Google Cloud
+
+	Microsoft Azure
+
+Example:
+
+	spec:
+	  type: LoadBalancer
+
+Access:
+
+	External IP → Service → Pods
+
+=========================================
+
+Production Example
+
+Frontend and Backend microservices.
+
+	Users
+	   │
+	   ▼
+	Frontend Service
+	   │
+	   ▼
+	Frontend Pods
+	   │
+	   ▼
+	Backend Service
+	   │
+	   ▼
+	Backend Pods
+
+get the service 
+
+	kubectl get svc
+
+kubectl describe svc web-service
+
+shows: 
+	Endpoints
+
+	Ports
+
+	Selectors
+
+delete the service 
+
+	kubectl delete svc web-service
+
+
+# deploy your first pod 
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: django-app
+  labels:
+    app: django-app
+  namespace: test-ns
+spec:
+  containers:
+  - name: django-app
+    image: <image>
+    ports:
+    - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+ name: django-app-svc
+ namespace: test-ns
+spec:
+  type: NodePort   # node port 
+  selector:
+    app: django-app
+  ports:
+  - port: 80
+    targetPort: 8080

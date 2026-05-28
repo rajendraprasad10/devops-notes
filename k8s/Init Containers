@@ -1,0 +1,60 @@
+1. Init Containers
+
+What is Init Container?
+
+An Init Container is a special container that runs before the main application container starts in a Pod.
+
+👉 It runs only once and must complete successfully before the app container starts.
+
+🎯 Why we use Init Containers?
+
+	Setup environment before app starts
+
+	Wait for dependencies (DB, API, etc.)
+
+	Download configuration/files
+
+	Run migrations or initialization scripts
+
+
+👉 Flow:
+
+	1. Init container runs
+
+	2. Completes successfully
+
+	3. Then main container starts
+
+Example YAML (Init Container)
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: init-container-demo
+spec:
+  containers:
+  - name: app
+    image: nginx
+  initContainers:
+  - name: init-myservice
+    image: busybox
+    command: ['sh', '-c', 'echo Initializing... && sleep 10']
+
+How to Test Init Container
+
+1. Create pod
+
+	kubectl apply -f init.yaml
+
+2. Check pod status
+
+	kubectl get pods
+
+3. Describe pod (see init container logs)
+
+	kubectl describe pod init-container-demo
+
+4. Check logs of init container
+
+	kubectl logs init-container-demo -c init-myservice
+

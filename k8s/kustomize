@@ -1,0 +1,15 @@
+kustomize
+
+Download and run the script:
+
+	curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+
+Move the binary to your path:
+
+
+	sudo mv kustomize /usr/local/bin/
+
+
+Verify the installation:
+
+	kustomize version

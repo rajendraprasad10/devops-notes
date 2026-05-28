@@ -1,0 +1,275 @@
+CRD 
+
+A CRD (Custom Resource Definition) in Kubernetes allows you to create your own Kubernetes resource types.
+
+It extends Kubernetes API beyond built-in resources like:
+
+Pod
+Deployment
+Service
+Ingress
+
+
+Simple Understanding
+
+Without CRD:
+
+Kubernetes understands only built-in objects.
+
+Example:
+
+kind: Pod
+kind: Service
+kind: Deployment
+
+
+With CRD:
+
+YOU can create new resource types.
+
+Example:
+
+kind: Database
+kind: Backup
+kind: Kafka
+kind: RedisCluster
+
+These are custom resources.
+
+
+Why CRDs Exist
+
+	CRDs allow Kubernetes to manage complex applications declaratively.
+
+Example:
+
+	databases
+	Kafka
+	monitoring stacks
+	cloud resources
+	operators
+	AI workloads
+
+
+
+Real-World Examples
+
+1. Prometheus Operator
+
+	Creates custom resources:
+
+	ServiceMonitor
+	Prometheus
+	AlertManager
+
+
+2. ArgoCD
+
+Creates:
+
+	Application
+	ApplicationSet
+
+
+3. Cert-Manager
+
+Creates:
+
+	Certificate
+	Issuer
+	ClusterIssuer
+
+
+4. Istio
+
+	Creates:
+
+	VirtualService
+	
+	Gateway
+
+	DestinationRule
+	
+	CRD Architecture
+
+
+CRD
+  |
+  |----> Defines new API resource
+  |
+Custom Resource (CR)
+  |
+  |----> Actual object instance
+
+Example
+
+Step 1 — Create CRD
+
+crd.yaml
+
+
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+
+metadata:
+  name: databases.mycompany.com
+
+spec:
+  group: mycompany.com
+
+  names:
+    plural: databases
+    singular: database
+    kind: Database
+    shortNames:
+      - db
+
+  scope: Namespaced
+
+  versions:
+    - name: v1
+
+      served: true
+      storage: true
+
+      schema:
+        openAPIV3Schema:
+          type: object
+
+          properties:
+            spec:
+              type: object
+
+              properties:
+                engine:
+                  type: string
+
+                version:
+                  type: string
+
+                storage:
+                  type: string
+Apply CRD
+
+kubectl apply -f crd.yaml
+
+Verify CRD
+
+kubectl get crd
+
+Output:
+
+databases.mycompany.com
+
+----------------------------------------------------------
+
+
+Step 2 — Create Custom Resource
+
+database.yaml
+
+	apiVersion: mycompany.com/v1
+	kind: Database
+
+	metadata:
+	  name: postgres-db
+
+	spec:
+	  engine: postgres
+	  version: "16"
+	  storage: 20Gi
+
+Apply Resource
+
+	kubectl apply -f database.yaml
+
+View Custom Resource
+
+	kubectl get databases
+
+or:
+
+	kubectl get db
+
+Example:
+
+	NAME          	AGE
+	postgres-db   	1m
+
+------------------------------
+
+Describe Resource
+
+kubectl describe db postgres-db
+
+
+What Happens Internally
+
+CRD only creates API structure.
+
+
+By itself:
+
+CRD does NOTHING
+
+Usually an Operator watches CRDs.
+
+CRD + Operator
+
+This is the real power.
+
+
+
+Example:
+
+Database CR created
+      |
+Operator watches it
+      |
+Creates:
+  - StatefulSet
+  - PVC
+  - Service
+  - ConfigMap
+
+Automatically.
+
+
+What Is an Operator?
+
+Operator = Controller + CRD
+
+It automates application management.
+
+Famous 					Operators
+
+Operator					Purpose
+Prometheus 					Operator	Monitoring
+Elastic Operator			Elasticsearch
+Strimzi						Kafka
+ArgoCD						GitOps
+Cert Manager				TLS certificates
+
+Check Existing CRDs
+
+Run:
+
+kubectl get crd
+
+You may see:
+
+applications.argoproj.io
+certificates.cert-manager.io
+servicemonitors.monitoring.coreos.com
+
+
+Get CRD Details
+
+	kubectl describe crd databases.mycompany.com
+
+Delete CRD
+
+	kubectl delete crd databases.mycompany.com
+
+WARNING:
+This also deletes all associated custom resources.

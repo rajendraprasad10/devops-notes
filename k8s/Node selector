@@ -1,0 +1,440 @@
+ NodeSelector
+
+ A nodeSelector is the simplest way to constrain Kubernetes Pods to run on specific nodes within a cluster. It works by matching labels assigned to nodes with the criteria defined in a Pod's specification
+
+
+ Simplest way to schedule a Pod on a node
+
+ Matches exact label (key=value)
+
+
+ How to Use Node Selectors
+
+Step 1: Check nodes
+	kubectl get nodes
+
+
+Step 2: Add label to node
+
+	kubectl label nodes worker-1 disktype=ssd
+
+step 3:
+
+Add nodeSelector to Pod Spec: 
+
+	Update the Pod's YAML configuration to include the nodeSelector field under spec.
+
+	yaml
+
+		apiVersion: v1
+		kind: Pod
+		metadata:
+		  name: nginx
+		spec:
+		  containers:
+		  - name: nginx
+		    image: nginx
+		  nodeSelector:
+		    disktype: ssd
+
+Step 4: Apply & verify
+
+	kubectl apply -f pod.yaml
+
+	kubectl get pods -o wide
+
+check the node lables 
+
+	kubectl get nodes --show-labels
+
+check with lable 
+
+	kubectl get nodes -L disktype
+
+🔹 Behavior
+	
+	Exact match only
+
+	No flexibility
+
+	No OR conditions
+
+👉 If label not found → Pod = Pending
+
+
+
+Scheduling: 
+
+	The Kubernetes Scheduler will only place this Pod on nodes that have the exact disktype=ssd label.
+
+
+
+
+
+Built-in Labels: 
+
+	Kubernetes automatically applies certain labels to nodes, such as kubernetes.io/hostname or kubernetes.io/arch, which can also be used for selection
+
+
+🔹 When to Use (Real DevOps)
+
+	Small clusters
+	Quick testing
+	Simple workloads
+
+Example:
+
+	Run DB only on SSD node
+	Run app on specific node
+
+Limitation
+
+	Cannot handle:
+	Multiple conditions
+	Priority rules
+	Complex scheduling
+
+
+
+Node Affinity:
+
+	Node Affinity is an advanced scheduling feature in Kubernetes that provides more expressive rules for matching pods to nodes than the simpler nodeSelector. It allows you to specify hard requirements or soft preferences using logical operators like In, NotIn, Exists, and DoesNotExist.
+
+
+Types of Node Affinity
+
+Hard Rule
+
+requiredDuringSchedulingIgnoredDuringExecution: A "hard" rule where the scheduler must find a node matching the criteria, or the pod will remain unscheduled.
+
+Note: 
+
+	Pod must match, else not scheduled
+
+Soft Rule:
+
+preferredDuringSchedulingIgnoredDuringExecution: A "soft" rule where the scheduler tries to find a matching node but will still schedule the pod on a non-matching node if necessary.
+
+Note: 
+
+	Try to match, but not mandatory
+
+example 
+
+spec:
+  affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: disktype        # Hard rule: must have ssd1
+                    operator: In
+                    values:
+                      - ssd1
+                  - key: workload        # Hard rule: must be a database node
+                    operator: In
+                    values:
+                      - database
+
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              preference:
+                matchExpressions:
+                  - key: zone            # Soft rule: prefer us-east-1a
+                    operator: In
+                    values:
+                      - us-east-1a
+
+
+# Step 1: Label the node (attracts DB pods via nodeAffinity)
+
+	kubectl label nodes worker-1 workload=database
+	kubectl label nodes worker-1 disktype=ssd1
+	kubectl label nodes worker-1 zone=us-east-1a
+
+# Step 2: Taint the node (repels non-DB pods)
+
+	kubectl taint nodes worker-1 db=true:NoSchedule
+
+# Step 3: Apply the deployment
+
+	kubectl apply -f dev-2redis.yaml
+
+# Step 4: Verify pod is on worker-1
+	
+	kubectl get pods -n dev -o wide
+
+
+
+worker-1 node
+┌─────────────────────────────────────────┐
+│  Labels:  workload=database             │  ← nodeAffinity pulls Redis here
+│           disktype=ssd1                 │
+│           zone=us-east-1a               │
+│                                         │
+│  Taint:   db=true:NoSchedule            │  ← Blocks all non-DB pods
+│                                         │
+│  ✅ Redis pod   (has toleration)        │  ← Allowed in
+│  ❌ App pod     (no toleration)         │  ← Blocked
+│  ❌ Frontend    (no toleration)         │  ← Blocked
+└─────────────────────────────────────────┘
+
+
+
+In  					Match from list
+
+NotIn 				Exclude values
+
+Exists				Key must exist
+
+DoesNotExist	Key must not exist
+
+
+Real Workflow
+
+Step 1: Label nodes
+
+	kubectl label nodes worker-1 disktype=ssd
+
+	kubectl label nodes worker-1 workload=database
+
+Step 2: 
+	
+	kubectl apply -f dev-2redis.yml 
+
+Step 3:
+	
+	kubectl get pods -o wide
+
+
+1. Label a Node with Zone
+
+	kubectl label node <node-name> zone=us-east-1a
+	
+	Example:
+
+		kubectl label node worker-node-1 zone=us-east-1a
+
+2. Verify the Label
+
+		kubectl get nodes --show-labels
+
+	Or filter specifically:
+
+		kubectl get nodes -l zone=us-east-1a
+
+	Or describe the node:
+
+		kubectl describe node worker-node-1
+
+3. Update an Existing Zone Label
+
+		kubectl label node worker-node-1 zone=us-east-1b --overwrite
+
+4. Remove the Zone Label
+
+		kubectl label node worker-node-1 zone-
+
+5. Label Multiple Nodes
+
+		kubectl label node worker-node-1 worker-node-2 zone=us-east-1a
+
+
+
+Production Example: 
+
+	matchExpressions:
+	  - key: disktype
+	    operator: In
+	    values: [ssd]
+
+	  - key: workload
+	    operator: In
+	    values: [database]
+
+Meaning:
+
+	Only schedule on SSD nodes
+
+	Only nodes meant for database workloads
+
+
+Dedicated DB Nodes
+
+	kubectl label nodes worker-1 workload=database
+
+	kubectl taint nodes worker-1 db=true:NoSchedule
+
+Pod config
+
+	tolerations:
+	  - key: "db"
+	    operator: "Equal"
+	    value: "true"
+	    effect: "NoSchedule"
+
+👉 Result:
+
+	Only DB pods run on DB nodes
+
+	example from k8s docs 
+
+	https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes-using-node-affinity/
+
+
+
+
+
+
+Taints & Tolerations
+
+
+Taints & Tolerations: → Isolate Nodes (Practical Notes)
+
+This is how you reserve certain nodes (e.g., DB nodes, GPU nodes) so that only specific Pods can run there.
+
+🔹 1. Core Idea (Very Important)
+			Taint (on node) → “Don’t allow pods here”
+
+			Toleration (on pod) → “I’m allowed to run here”
+
+👉 Together = node isolation
+
+2. Taint Syntax
+	
+	kubectl taint nodes <node-name> key=value:effect
+
+Example: 
+
+	# Verify node has the taint
+
+	kubectl describe node ip-172-31-13-173 | grep -A5 Taints
+
+	# Verify node has the label
+
+	kubectl describe node ip-172-31-13-173 | grep -A10 Labels
+
+
+	kubectl taint nodes ip-172-31-13-173 db=true:NoSchedule
+
+	kubectl label nodes ip-172-31-13-173 workload=database
+
+
+Effect							Meaning
+
+NoSchedule					Pod won’t schedule
+
+PreferNoSchedule		Avoid if possible
+
+NoExecute						Evict existing pods
+
+
+
+
+3. Practical Example (DB Node Isolation)
+
+Step 1: Taint the Node
+
+	kubectl taint nodes ip-172-31-13-173 db=true:NoSchedule
+
+Now:
+
+	No pod can run on worker-1
+
+Try normal pod (will FAIL)
+
+spec:
+
+  containers:
+    - name: nginx
+      image: nginx
+
+👉 Result:
+
+Pod = Pending
+Error: node has taint {db=true:NoSchedule}
+
+
+Step 2: Add Toleration (Allow Pod)
+
+spec:
+  tolerations:
+    - key: "db"
+      operator: "Equal"
+      value: "true"
+      effect: "NoSchedule"
+
+  containers:
+    - name: postgres
+      image: postgres
+
+👉 Now:
+
+	Pod can run on that node
+
+4. Production Pattern (BEST PRACTICE)
+
+	Only DB workloads run on DB nodes
+
+Step 1: Label Node
+
+	kubectl label nodes ip-172-31-13-173 workload=database
+
+Step 2: Taint Node
+
+	kubectl taint nodes ip-172-31-13-173 db=true:NoSchedule
+
+
+Step 3: Pod Config (Both Required)
+
+spec:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: workload
+                operator: In
+                values: ["database"]
+
+  tolerations:
+    - key: "db"
+      operator: "Equal"
+      value: "true"
+      effect: "NoSchedule"
+
+
+Result:
+
+	Pod Type												Result
+
+	DB Pod (with toleration)					Runs
+
+
+
+
+
+Remove Taint (if needed)
+
+		kubectl taint nodes ip-172-31-13-173 db=true:NoSchedule-
+
+
+
+
+Common Mistakes:
+
+	Only Taint (no toleration)
+
+		→ Pod stuck in Pending
+
+	Only Toleration (no affinity)
+
+		→ Pod may run on any node
+
+
+Always combine:
+
+	nodeAffinity → select node
+
+	toleration → allow access
+

@@ -1,0 +1,219 @@
+What are Probes?
+
+In Kubernetes, Probes are health checks used by kubelet to monitor container status.
+
+They tell Kubernetes:
+
+Is container alive?
+
+Is container ready to serve traffic?
+
+Has container started properly?
+
+
+
+
+Types of Probes
+
+Probe Type				Purpose
+
+Startup Probe       Check if app has started
+
+Liveness Probe			Check if container is alive
+
+Readiness Probe			Check if container is ready
+
+
+
+
+1. Liveness Probe
+
+ What it does:
+Checks if container is running correctly
+If it fails → Kubernetes restarts the container
+
+ Example:
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 80
+  initialDelaySeconds: 10
+  periodSeconds: 5
+
+ Use Case:
+App stuck / deadlock → restart automatically
+
+
+
+
+2. Readiness Probe
+
+What it does:
+
+Checks if container is ready to accept traffic
+
+If it fails → Pod is removed from Service
+
+Example:
+readinessProbe:
+  httpGet:
+    path: /ready
+    port: 80
+  initialDelaySeconds: 5
+  periodSeconds: 5
+
+
+Use Case:
+App is starting / DB not connected → don’t send traffic
+
+
+3. Startup Probe
+
+What it does:
+
+Checks if app has fully started
+Prevents liveness probe from killing slow-start apps
+
+Example:
+startupProbe:
+  httpGet:
+    path: /startup
+    port: 80
+  failureThreshold: 30
+  periodSeconds: 10
+
+
+Use Case:
+Slow apps (Java, ML models, large services)
+
+
+
+
+Types of Probe Methods
+
+1. HTTP Probe
+httpGet:
+  path: /health
+  port: 80
+
+
+2. TCP Probe
+tcpSocket:
+  port: 3306
+
+
+3. Exec Probe
+exec:
+  command:
+  - cat
+  - /tmp/healthy
+
+
+
+
+Example
+
+
+Complete Pod Example
+
+
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: probe-demo
+spec:
+  containers:
+  - name: app
+    image: nginx
+    ports:
+    - containerPort: 80
+
+    livenessProbe:
+      httpGet:
+        path: /
+        port: 80
+      initialDelaySeconds: 10
+      periodSeconds: 5
+
+    readinessProbe:
+      httpGet:
+        path: /
+        port: 80
+      initialDelaySeconds: 5
+      periodSeconds: 5
+
+    startupProbe:
+      httpGet:
+        path: /
+        port: 80
+      failureThreshold: 30
+      periodSeconds: 10
+
+
+How to Check Probes (Commands)
+
+
+ 1. Describe Pod
+
+kubectl describe pod <pod-name>
+
+Shows:
+
+Probe status
+Failures
+Restart count
+
+
+
+2. Check Pod Status
+
+kubectl get pods
+
+Look for:
+
+Running
+CrashLoopBackOff (liveness failure)
+
+
+
+
+3. Check Events
+
+kubectl get events
+
+
+4. Logs
+
+kubectl logs <pod-name>
+
+
+5. Exec into Pod
+
+kubectl exec -it <pod-name> -- /bin/bash
+
+
+
+
+Liveness probe and Readiness probe
+==================================
+
+--> Liveness and Readiness Probes are mechanisms in Kubernetes used to check the health and status of containers within a Pod. They help ensure that applications are running as expected and can serve traffic.
+
+  
+
+
+Liveness Probe
+-----------------
+Suppose that a Pod is running our application inside a container, but due to some reason let’s say memory leak, cpu usage, application deadlock etc the
+application is not responding to our requests, and stuck in error state.
+
+Liveness probe checks the container health as we tell it do, and if  some reason the liveness probe fails, it restarts the container.
+
+Readiness Probe
+---------------
+This type of probe is used to detect if a container is ready to accept traffic. You can use this probe to manage which pods are used as backends for load balancing services. 
+
+If a pod is not ready,  then be removed from the list of load balancers.
+

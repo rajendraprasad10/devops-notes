@@ -1,0 +1,159 @@
+NameSpace
+
+
+
+
+What is a Kubernetes Namespace?
+
+A namespace in Kubernetes is a logical partition inside a cluster used to organize and isolate resources.
+
+Think of a cluster like a large building, and namespaces like different rooms where teams keep their resources.
+
+
+kubectl config set-context --current --namespace=dev
+
+
+"A namespace in Kubernetes is a logical isolation mechanism used to divide cluster resources between different teams, environments, or applications. It helps in organizing resources, controlling access using RBAC, and applying resource quotas. Each namespace acts as a virtual cluster inside the Kubernetes cluster."
+
+
+kubectl api-resources
+
+
+Kubernetes Cluster
+│
+├── default
+│   ├── pods
+│   ├── services
+│
+├── dev
+│   ├── pods
+│   ├── deployments
+│
+├── staging
+│
+└── production
+
+
+
+Why Namespaces Are Used
+
+Namespaces help with:
+
+1️⃣ Resource organization
+Separate applications or teams.
+
+2️⃣ Access control
+Using RBAC permissions per namespace.
+
+3️⃣ Resource limits
+Limit CPU / memory for a namespace.
+
+4️⃣ Avoid naming conflicts
+You can have the same pod name in different namespaces.
+
+
+
+
+Example:
+
+dev/nginx
+prod/nginx
+
+Both can exist because they are in different namespaces.
+
+
+
+Default Namespaces in Kubernetes
+
+When a cluster is created, Kubernetes automatically creates these namespaces:
+
+Namespace				Purpose
+
+default					Default namespace for resources
+kube-system				Kubernetes system components
+kube-public				Publicly readable resources
+kube-node-lease			Node heartbeat information
+
+check them 
+kubectl get namespaces
+
+How to Create a Namespace
+Command
+kubectl create namespace dev
+
+
+YAML Example
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dev
+
+Apply:
+
+kubectl apply -f namespace.yaml
+
+
+
+How to Use Namespace with Resources
+
+Example pod inside namespace
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+  namespace: dev
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+
+Apply:
+
+kubectl apply -f pod.yaml
+
+
+
+How to Check Kubernetes Objects
+Check All Namespaces
+
+kubectl get ns
+
+check pods 
+
+kubectl get po 
+
+kubeclt get po -n dev 
+
+check in all name spaces
+kubectl get pods -A
+
+check all in namespace 
+kubectl get all -n dev
+
+
+
+example 
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dev
+
+  
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-test
+  namespace: dev
+  labels:
+    app: nginx-test
+spec:
+  containers:
+  - name: nginx
+    image: nginx:latest
+    ports:
+    - containerPort: 80
+

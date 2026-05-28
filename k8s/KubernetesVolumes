@@ -1,0 +1,126 @@
+What is a Volume in Kubernetes?
+
+A Volume is storage attached to a Pod that lets containers:
+
+persist data beyond container restarts
+share files between containers in the same Pod
+
+👉 Containers are ephemeral, but volumes give durable or shared storage.
+
+
+Types of Volumes (Important)
+
+1. emptyDir (Ephemeral)
+   --------------------
+
+Use:
+Temp storage
+Sharing data between containers (sidecar pattern)
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: emptydir-demo
+spec:
+  containers:
+  - name: app
+    image: nginx
+    volumeMounts:
+    - mountPath: /data
+      name: shared-data
+
+  - name: sidecar
+    image: busybox
+    command: ["sh","-c","while true; do echo hello > file.txt; sleep 5; done"]
+    volumeMounts:
+    - mountPath: /data
+      name: shared-data
+
+  volumes:
+  - name: shared-data
+    emptyDir: {}
+
+Lifecycle: This will be Deleted when Pod is deleted
+
+
+2. hostPath
+   --------
+
+	Use:
+	Access node’s filesystem (for logs, system-level apps)
+
+		volumes:
+		- name: host-volume
+		  hostPath:
+		    path: /var/log
+
+		⚠️ Not recommended for production (node dependency)
+
+
+Persistent Volumes (PV + PVC)
+Use:
+	Database storage
+	Long-term storage
+
+
+	Admin creates PV
+	User creates PVC
+	Pod uses PVC → gets storage
+
+
+	Example: 
+
+	Persistent Volume (PV)
+
+	apiVersion: v1
+	kind: PersistentVolume
+	metadata:
+	  name: pv-demo
+	spec:
+	  capacity:
+	    storage: 1Gi
+	  accessModes:
+	  - ReadWriteOnce
+	  hostPath:
+	    path: /mnt/data
+
+	Persistent Volume Claim (PVC)
+
+	apiVersion: v1
+	kind: PersistentVolumeClaim
+	metadata:
+	  name: pvc-demo
+	spec:
+	  accessModes:
+	  - ReadWriteOnce
+	  resources:
+	    requests:
+	      storage: 1Gi
+
+
+Pod using PVC
+
+containers:
+- name: app
+  image: nginx
+  volumeMounts:
+  - mountPath: /usr/share/nginx/html
+    name: storage
+
+volumes:
+- name: storage
+  persistentVolumeClaim:
+    claimName: pvc-demo
+
+
+4. StorageClass (Dynamic Provisioning)
+
+Use:
+	Auto-create storage (AWS EBS, Azure Disk, etc.)
+	apiVersion: storage.k8s.io/v1
+	kind: StorageClass
+	metadata:
+	  name: fast
+	provisioner: kubernetes.io/aws-ebs
+
+	👉 No need to manually create PV

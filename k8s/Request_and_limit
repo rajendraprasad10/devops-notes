@@ -1,0 +1,156 @@
+
+What are Requests & Limits?
+
+In Kubernetes:
+
+Requests → Minimum resources guaranteed to a container
+
+Limits → Maximum resources a container can use
+
+
+
+CPU Explanation
+
+1000m = 1 CPU core
+
+200m = 0.2 CPU
+
+Example:
+
+Request = 200m → guaranteed CPU
+
+Limit = 500m → max allowed CPU
+
+
+How Kubernetes Uses Them
+
+Scheduling (Very Important)
+
+Scheduler uses requests only
+
+Pod is placed on node where requested resources are available
+
+
+
+Resource		Behavior when exceeding limit
+
+CPU					Throttled (slower)
+Memory				Pod gets OOMKilled 
+
+
+Key Points (Interview Gold)
+
+Requests
+	Used for scheduling
+	Guarantees minimum resources
+
+Limits
+	Prevents resource overuse
+	Protects node from crashing
+
+
+Best Practices
+
+Always define both requests & limits
+
+Keep limit slightly higher than request
+
+Use monitoring tools like:
+
+Prometheus
+Grafana
+
+Use LimitRange & ResourceQuota (namespace level)
+
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dev
+
+
+ResourceQuota Example
+
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: django-resource-quota
+  namespace: dev
+spec:
+  hard:
+    pods: "10"
+    requests.cpu: "3"
+    requests.memory: 2Gi
+    limits.cpu: "4"
+    limits.memory: 4Gi
+
+
+
+
+LimitRange Example
+
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: django-limit-range
+  namespace: dev
+spec:
+  limits:
+    - default:
+        cpu: "500m"
+        memory: "512Mi"
+      defaultRequest:
+        cpu: "250m"
+        memory: "256Mi"
+      type: Container
+
+
+commands 
+
+
+Check Requests & Limits in Kubernetes
+
+1. Describe Pod (Best Command )
+	
+	kubectl describe pod <pod-name>
+
+2. Describe Deployment
+
+	kubectl describe deployment <deployment-name>
+
+
+3. Get Pod YAML (Full Details)
+
+	kubectl get pod <pod-name> -o yaml
+
+4. Get Deployment YAML
+
+	kubectl get deployment <deployment-name> -o yaml
+
+5. Check Resource Usage (Live Metrics)
+	
+	kubectl top pod
+
+6. Check Node Capacity
+
+	kubectl describe node <node-name>
+
+7. Filter Only Resources (Advanced)
+	
+	kubectl get pod <pod-name> -o jsonpath='{.spec.containers[*].resources}'
+
+8. All Pods Resource Summary
+	
+	kubectl describe pods | grep -A 5 "Requests"
+
+9. Namespace Quota Check
+	
+	kubectl get resourcequota
+	kubectl describe resourcequota
+
+10. LimitRange Check
+	
+	kubectl get limitrange
+	kubectl describe limitrange

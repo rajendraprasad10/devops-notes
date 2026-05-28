@@ -63,6 +63,7 @@ Step 1 — Create VPC
         Name                    demo-vpc
         IPv4 CIDR               10.0.0.0/16
 
+=================================================================
 
 Step 2 — Create Public Subnet
 
@@ -81,6 +82,8 @@ Step 2 — Create Public Subnet
             This is IMPORTANT.
 
 
+===============================================================
+
 Step 3 — Create Private Subnet
 
         Field   Value
@@ -91,6 +94,7 @@ Step 3 — Create Private Subnet
 
         Do NOT enable public IP.
 
+--------------------------------------------------------------
 
 Step 4 — Create Internet Gateway (IGW)
 
@@ -107,6 +111,7 @@ Step 4 — Create Internet Gateway (IGW)
 
                 demo-vpc
 
+--------------------------------------------------------------
 
 Step 5 — Create Public Route Table
 
@@ -125,6 +130,7 @@ Step 5 — Create Public Route Table
 
         public-subnet
 
+------------------------------------------------------------------
 
 Step 6 — Create Elastic IP
 
@@ -132,6 +138,7 @@ Step 6 — Create Elastic IP
 
         This is needed for NAT Gateway.
 
+---------------------------------------------------------------
 
 Step 7 — Create NAT Gateway
 
@@ -139,13 +146,15 @@ Step 7 — Create NAT Gateway
 
   Field            Value
    Name           demo-nat
-   Subnet         public-subnet
+   Subnet         public-subnet  IMP *****************
    Elastic IP     select allocated EIP
 
 Why public subnet?
 
         Because NAT needs internet access.
 
+
+------------------------------------------------------------------
 
 Step 8 — Create Private Route Table
 
@@ -163,7 +172,7 @@ Associate:
 
    private-subnet
 
-
+---------------------------------------------------------------------
 
 Step 9 — Create NACL
 
@@ -177,24 +186,27 @@ Associate with:
     public-subnet
     private-subnet
 
-
+----------------------------------------------------------------------
 
 Step 10 — Configure NACL Rules
 
         Inbound Rules
 
-        Rule    Type    Port    Source  Allow/Deny
-        100     HTTP    80      0.0.0.0/0       ALLOW
-        110     HTTPS   443     0.0.0.0/0       ALLOW
-        120     SSH     22      YOUR-IP/32      ALLOW
-        *       ALL     ALL     ALL     DENY
+        Rule    Type            Port    Source  Allow/Deny
+        100     HTTP            80      0.0.0.0/0       ALLOW
+        110     HTTPS           443     0.0.0.0/0       ALLOW
+        120     SSH             22      YOUR-IP/32      ALLOW
+        130     Custom TCP  1024-65535  0.0.0.0/0       Allow
+
 
 
         Outbound Rules
 
-        Rule    Type            Port    Destination     Allow/Deny
-        100     ALL Traffic     ALL     0.0.0.0/0         ALLOW
+        Rule    Type            Port            Destination             Allow/Deny
+        100     ALL Traffic     ALL             0.0.0.0/0               ALLOW
+        110     Custom TCP      1024-65535      0.0.0.0/100             ALLOW
 
+---------------------------------------------------------------------------
 
 Step 11 — Create Web Server Security Group
 
@@ -214,7 +226,7 @@ Outbound:
 
      Allow All
 
-
+------------------------------------------------------------------------
 
 Step 12 — Create App Server Security Group
 
@@ -238,6 +250,7 @@ Outbound:
 
         Allow All
 
+-------------------------------------------------------------------------------
 
 Step 13 — Launch EC2 Web Server
 
@@ -250,6 +263,26 @@ Network Settings
 
 This server gets internet.
 
+install Nginx in web server 
+
+     sudo apt update
+
+     Install 
+     sudo apt install nginx -y
+
+     start 
+     sudo systemctl start nginx
+
+     Enable 
+     sudo systemctl enable nginx
+
+     Status 
+     sudo systemctl status nginx
+
+     Open in Browser
+     http://<EC2-PUBLIC-IP>
+
+--------------------------------------------------------------------------
 
 Step 14 — Launch EC2 App Server
 
@@ -261,3 +294,456 @@ Step 14 — Launch EC2 App Server
      This server does NOT get internet directly.
 
      Internet access works THROUGH NAT Gateway.
+
+
+-------------------------------------------------------------------------
+
+
+
+Step 15 — Create Target Group for App Servers
+
+Go to:
+
+→ EC2 → Target Groups → Create Target Group
+
+Configuration:
+
+Field                   Value
+
+Target Type             Instances
+Name                    demo-app-tg
+Protocol                HTTP
+Port                    8000
+VPC                     demo-vpc
+
+Health Check:
+
+Field                   Value
+
+Protocol                HTTP
+Path                    /health
+
+
+→ Register Targets
+
+Select:
+
+        App EC2 instance
+
+        Port:
+
+        8000
+
+---------------------------------------------------------------------------
+
+
+Step 16 — Create Application Load Balancer (ALB)
+
+Go to:
+
+        → EC2 → Load Balancers → Create Load Balancer
+
+Choose:
+
+        Application Load Balancer
+
+
+Configuration:
+
+Field                   Value
+
+Name                    demo-alb
+Scheme                  Internet-facing
+IP Type                 IPv4
+VPC                     demo-vpc
+
+
+----------------------------------------------------------------------------
+
+
+Step 17 — Create ALB Security Group
+
+Create new Security Group:
+
+Field           Value
+
+Name            alb-sg
+
+Inbound Rules:
+
+Type    Port    Source
+HTTP    80      0.0.0.0/0
+HTTPS   443     0.0.0.0/0
+
+Outbound
+
+Allow All
+
+-----------------------------------------------------------------------------
+
+Step 18 — Modify App Security Group
+
+Update:
+
+        app-sg
+
+Add inbound rule:
+
+            Type        Port    Source
+
+        Custom  TCP      8000    alb-sg
+
+Now:
+
+        Internet → ALB → App Servers
+
+        Direct access to app servers is blocked.
+
+
+----------------------------------------------------------------------------
+
+
+Step 19 — Configure Listener
+
+Inside ALB:
+
+Listener
+
+Protocol        Port
+HTTP            80
+
+Forward to:
+
+        demo-app-tg
+
+
+Architecture Flow
+
+        Client
+           ↓
+        Application Load Balancer
+           ↓
+        Target Group
+           ↓
+        Private App Servers
+
+
+----------------------------------------------------------------------------------
+
+Step 20 — Test Load Balancer
+
+Copy:
+
+        ALB DNS Name
+
+Example:
+
+        http://demo-alb-123456.ap-south-2.elb.amazonaws.com
+
+Open in browser.
+
+        Traffic should reach FastAPI app running on port 8000.
+
+
+---------------------------------------------------------------------
+
+Step 21 — Create Launch Template
+
+Go to:
+
+        → EC2 → Launch Templates → Create
+
+Configuration
+
+Field                   Value
+
+Name                    app-launch-template
+AMI                     Ubuntu 24.04
+Instance Type           t3.micro
+Security Group          app-sg
+Key Pair                your-key
+Subnet                  private-subnet
+
+
+-----------------------------------------------------------
+
+
+Step 22 — Create Auto Scaling Group (ASG)
+
+   Go to:
+
+        → EC2 → Auto Scaling Groups → Create
+
+
+        Configuration: 
+
+        Field                   Value
+
+        Name                    demo-asg
+        Launch Template         app-launch-template
+        VPC                     demo-vpc
+
+
+Subnets
+
+Select private subnets:
+
+        private-subnet-a
+        private-subnet-b
+
+(Recommended for HA)
+
+Attach Load Balancer
+
+Choose:
+
+        Attach to existing load balancer
+
+Select:
+
+        demo-app-tg
+
+
+-------------------------------------------------
+
+Step 23 — Configure Auto Scaling
+
+        Desired Capacity
+
+                2
+
+        Minimum Capacity
+
+                2
+
+        Maximum Capacity
+
+                5
+
+-----------------------------------------------------------
+
+Step 24 — Configure Scaling Policy
+
+        Choose:
+
+                Target Tracking Scaling Policy
+
+        Metric:
+
+                Average CPU Utilization
+
+        Target Value:
+
+                60%
+
+        Meaning:
+
+                If CPU > 60% → add instances
+                If CPU < 60% → remove instances
+
+
+------------------------------------------------------------------
+
+
+Step 25 — Multi-AZ Private Subnets (Recommended)
+
+Create another private subnet.
+
+
+Name                       CIDR              AZ
+private-subnet-b        10.0.4.0/24     ap-south-2b
+
+Associate:
+
+        private-rt
+
+                Now ASG distributes instances across AZs.
+
+
+
+Final Production Architecture
+
+                    INTERNET
+                        │
+                        ▼
+              Application Load Balancer
+                        │
+          ┌─────────────┴─────────────┐
+          │                           │
+          ▼                           ▼
+    App Server 1                App Server 2
+   (Private Subnet A)          (Private Subnet B)
+          │                           │
+          └─────────────┬─────────────┘
+                        │
+                        ▼
+                  NAT Gateway
+                        │
+                        ▼
+                 Internet Gateway
+
+
+
+
+
+
+Most common problems 
+
+
+Your Network ACL has a problem ❌
+
+        You currently have:
+
+        Rule    Action
+
+        100 Allow All Traffic   ✅
+
+        * Deny All Traffic      ❌ default
+
+   The * Deny is normal, BUT the issue is probably your inbound/outbound ephemeral ports are not properly allowed.
+
+   For AWS NACLs, you must allow:
+
+  outbound HTTP/HTTPS
+  return traffic (ephemeral ports)
+
+Why This Happens
+
+APT uses:
+
+        HTTPS port 443 outbound
+        Random ephemeral return ports
+
+        Without ephemeral ports:
+
+        connection starts
+        response packets blocked
+        apt hangs forever
+
+Ephemeral:
+
+  Ephemeral ports are temporary/random ports used by your server for outgoing connections.
+
+  When your EC2 instance connects to the internet (APT, curl, wget, browser requests, APIs), it does not use only port 80/443.
+
+Instead:
+
+ Destination server uses:
+ HTTP → port 80
+ HTTPS → port 443
+
+ Your EC2 uses a random temporary source port like:
+  32768
+  49152
+  55001
+   etc.
+
+ These random ports are called ephemeral ports.
+
+
+ Example: 
+
+
+        Your EC2 runs:
+
+                sudo apt update
+
+        Connection becomes:
+
+        EC2-IP:54021  --->  archive.ubuntu.com:443
+
+        Here:
+
+                443 = destination HTTPS port
+        
+                54021 = temporary ephemeral port
+
+        The Ubuntu server sends response back to:
+
+                archive.ubuntu.com:443 ---> EC2-IP:54021
+
+                If NACL blocks port 54021,
+           then:
+
+           request goes out ✅
+
+          response blocked ❌
+        
+        apt hangs forever
+
+-------------------------------------------------------
+
+Why Security Groups Usually Work Automatically:
+
+        Amazon Web Services Security Groups are stateful:
+
+  request allowed out
+ 
+ response automatically allowed back
+
+ So you normally don't worry about ephemeral ports there.
+
+----------------------------------------------------
+
+Why NACL Needs Ephemeral Ports
+
+Network ACLs are stateless:
+
+    they do NOT remember connections
+    every response packet must be explicitly allowed
+
+Therefore AWS requires:
+
+   outbound 80/443
+   inbound ephemeral ports
+   sometimes outbound ephemeral too
+
+------------------------------------------------------
+
+Common Ephemeral Port Range
+
+  Linux usually uses:
+
+     1024-65535
+
+AWS recommends allowing:
+
+     TCP 1024-65535
+
+
+---------------------------------------------------
+
+
+Real-World Services Using Ephemeral Ports
+
+These all need ephemeral ports:
+
+apt update
+curl
+wget
+APIs
+Docker pull
+Kubernetes nodes
+Database clients
+Browsers
+SSH responses
+
+--------------------------------------------
+
+
+Stateful vs Stateless
+
+Feature                 Security Group          NACL
+
+Type                    Stateful                Stateless
+Remembers connection    ✅                       ❌
+Need ephemeral rules    ❌ Usually No            ✅ Yes
+Applied at              ENI/Instance             Subnet
+
+
+-------------------------------------------------------------
+
+
+Setup the Fastapi application: 
+
+

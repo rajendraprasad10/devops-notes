@@ -1,0 +1,254 @@
+
+What is a DaemonSet?
+
+A DaemonSet in Kubernetes ensures that a copy of a Pod runs on every node (or selected nodes) in the cluster.
+
+When a new node is added → Pod is automatically created
+
+When a node is removed → Pod is deleted automatically
+
+
+Simple Definition
+
+DaemonSet = One Pod per Node
+
+
+
+Why Do We Use DaemonSet?
+
+Used for node-level operations like:
+
+Monitoring agents (Prometheus Node Exporter)
+
+Log collectors (Fluentd, Filebeat)
+
+Security agents
+
+Networking plugins (CNI)
+
+
+
+How DaemonSet Works
+
+Scheduler ensures:
+
+Node1 → Pod1
+Node2 → Pod2
+Node3 → Pod3
+
+
+
+
+DaemonSet Manifest
+
+Example 1
+
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nginx-daemonset
+  namespace: default
+  labels:
+    app: nginx-daemon
+spec:
+  selector:
+    matchLabels:
+      app: nginx-daemon
+
+  updateStrategy:
+    type: RollingUpdate
+
+  template:
+    metadata:
+      labels:
+        app: nginx-daemon
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
+
+      # Allow DaemonSet to run on master/control-plane nodes
+      tolerations:
+      - key: "node-role.kubernetes.io/control-plane"
+        operator: "Exists"
+        effect: "NoSchedule"
+
+      # Optional: run only on specific nodes
+      nodeSelector:
+        kubernetes.io/os: linux
+
+
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-exporter
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: node-exporter
+  template:
+    metadata:
+      labels:
+        app: node-exporter
+    spec:
+      hostNetwork: true
+      hostPID: true
+
+      #  Add this block so Pod can run on master
+      tolerations:
+      - key: "node-role.kubernetes.io/control-plane"
+        operator: "Exists"
+        effect: "NoSchedule"
+
+      containers:
+      - name: node-exporter
+        image: prom/node-exporter:latest
+        ports:
+        - containerPort: 9100
+          name: metrics
+
+Verify Pods are running on all nodes including master
+
+kubectl get pods -n kube-system -o wide | grep node-exporter
+
+
+
+Alternative Option (Not Recommended for Production)
+
+You can remove taint from master permanently
+
+
+kubectl taint nodes <master-node-name> node-role.kubernetes.io/control-plane:NoSchedule-
+But prefer tolerations because:
+
+It is clean
+Works in multi-master clusters
+Does not affect scheduling of other apps
+
+
+
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-exporter
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: node-exporter
+  template:
+    metadata:
+      labels:
+        app: node-exporter
+    spec:
+      hostNetwork: true
+      hostPID: true
+      containers:
+      - name: node-exporter
+        image: prom/node-exporter:latest
+        ports:
+        - containerPort: 9100
+          name: metrics
+
+
+
+
+
+
+
+
+
+
+Example 2
+
+Real-Time Use Case (Logging Agent)
+
+Here’s a more practical example (Fluentd logging DaemonSet) 👇
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: fluentd-daemonset
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: fluentd
+
+  template:
+    metadata:
+      labels:
+        app: fluentd
+    spec:
+      containers:
+      - name: fluentd
+        image: fluent/fluentd:v1.16
+        volumeMounts:
+        - name: varlog
+          mountPath: /var/log
+
+      volumes:
+      - name: varlog
+        hostPath:
+          path: /var/log
+
+
+
+Key Sections Explained
+
+kind: DaemonSet → Ensures 1 pod per node
+
+selector → Matches pods
+
+template → Pod definition
+
+tolerations → Run on master nodes
+
+nodeSelector → Target specific nodes
+
+volumes (hostPath) → Access node files
+
+
+
+commands 
+
+
+
+1. Create DaemonSet
+
+kubectl apply -f daemonset.yaml
+
+2. Check DaemonSet
+
+kubectl get daemonsets
+
+kubectl get ds
+
+
+3. Check Pods (per node)
+
+kubectl get pods -o wide
+
+
+4. Describe DaemonSet
+
+kubectl describe ds nginx-daemon
+
+
+5. Delete DaemonSet
+
+kubectl delete ds nginx-daemon

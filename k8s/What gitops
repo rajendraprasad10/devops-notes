@@ -1,0 +1,455 @@
+What gitops 
+
+	GitOps is a DevOps practice where Git is the single source of truth for infrastructure and application deployments.
+
+	Instead of manually running commands on servers or Kubernetes clusters, you store everything in Git:
+
+		Infrastructure configuration
+
+		Kubernetes manifests
+
+		Application deployment files
+
+		Policies and automation scripts
+
+	Then automation tools read Git and apply the changes to the system automatically.
+
+--------------------------------------
+
+Example (Real World)
+
+Imagine you want to deploy a Python application to Kubernetes.
+
+Traditional way:
+
+	Developer → Build Docker image → Run kubectl apply manually
+
+GitOps way:
+
+Developer → Push YAML to Git → GitOps tool detects change → Deploys automatically
+
+-----------------------------------------------------------------
+Example 
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: python-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: python-app
+  template:
+    metadata:
+      labels:
+        app: python-app
+    spec:
+      containers:
+      - name: python-app
+        image: myrepo/python-app:v1
+
+If you change:
+
+replicas: 3 → replicas: 5
+
+and push to Git, the GitOps tool automatically scales the application.
+
+-------------------------------------------------------------------------------
+
+GitOps Architecture
+
+	Developer
+	   │
+	   │ Git Push
+	   ▼
+	Git Repository (Single Source of Truth)
+	   │
+	   │
+	GitOps Operator (ArgoCD / Flux)
+	   │
+	   ▼
+	Kubernetes Cluster
+	   │
+	   ▼
+	Application Deployment
+
+
+
+Popular GitOps Tools
+
+Most used tools:
+
+	• ArgoCD
+	• FluxCD
+	• Jenkins + GitOps workflow
+	• GitHub Actions
+
+Example workflow with ArgoCD:
+
+	Developer → GitHub
+	GitHub → ArgoCD detects change
+	ArgoCD → Syncs to Kubernetes
+----------------------------------------------------------------------------
+Why GitOps is Powerful
+
+Benefits:
+
+	Fully automated deployments
+
+	Easy rollback using Git
+
+	Infrastructure as Code
+
+	Version control for infrastructure
+
+	Better security & auditing
+
+	Faster CI/CD pipelines
+
+Rollback example:
+
+	git revert commit
+
+Cluster automatically returns to the previous state.
+
+--------------------------------------------------------------------------------
+
+
+Real Production Example
+
+Large companies deploy like this:
+
+	Developer → GitHub
+
+	CI Pipeline → Build Docker image
+
+	Update Helm/K8s YAML
+
+	Push to Git
+
+	ArgoCD → Deploys to cluster
+
+Tools involved:
+
+	GitHub
+	Docker
+	Kubernetes
+	ArgoCD
+
+
+	Helm
+	Prometheus
+	Grafana
+------------------------GitOps--------------
+
+
+What is ArgoCD?
+
+	ArgoCD is a GitOps continuous delivery tool for Kubernetes that automatically deploys applications from a Git repository to a Kubernetes cluster.
+
+In simple terms:
+
+	ArgoCD watches your Git repository and ensures the Kubernetes cluster always matches the configuration stored in Git.
+
+So if you change something in Git, ArgoCD automatically updates the cluster.
+
+-------------------------------------------------------
+
+Why ArgoCD is Used
+
+In traditional deployment:
+
+	Developer → run kubectl apply manually
+
+Problems:
+
+	Manual errors
+
+	No clear tracking
+
+	Hard to rollback
+
+	No automated synchronization
+
+With ArgoCD:
+
+	Developer → Push YAML to Git
+
+	ArgoCD → Detects change
+	
+	ArgoCD → Deploys to Kubernetes automatically
+
+ArgoCD GitOps Architecture Diagram: 
+
+                +-------------------+
+                |    Developer      |
+                +---------+---------+
+                          |
+                          | Git Push (K8s YAML / Helm)
+                          v
+                +-------------------+
+                |   Git Repository  |
+                | (GitHub / GitLab) |
+                +---------+---------+
+                          |
+                          | Pull Configuration
+                          v
+                +-----------------------+
+                |       ArgoCD          |
+                |-----------------------|
+                |  API Server           |
+                |  Repo Server          |
+                |  Application Controller|
+                +----------+------------+
+                           |
+                           | Sync / Apply
+                           v
+                +-----------------------+
+                |   Kubernetes Cluster  |
+                |-----------------------|
+                | Deployments           |
+                | Services              |
+                | Pods                  |
+                | ConfigMaps            |
+                +-----------------------+
+
+ArgoCD continuously checks:
+
+	Git State == Cluster State ?
+
+If not:
+
+	ArgoCD → Syncs automatically
+
+--------------------------------------------------------------------------
+
+
+Example Workflow
+
+	Step 1 – Developer pushes code
+
+git push origin main
+
+	Step 2 – Git repository contains:
+
+	deployment.yaml
+	service.yaml
+	ingress.yaml
+
+Step 3 – ArgoCD detects change.
+
+Step 4 – ArgoCD runs automatically:
+
+	kubectl apply -f deployment.yaml
+
+Step 5 – Application gets deployed in Kubernetes.
+
+
+Example Kubernetes Deployment Used by ArgoCD
+
+	apiVersion: apps/v1
+	kind: Deployment
+	metadata:
+	  name: python-app
+	spec:
+	  replicas: 3
+	  selector:
+	    matchLabels:
+	      app: python-app
+	  template:
+	    metadata:
+	      labels:
+	        app: python-app
+	    spec:
+	      containers:
+	      - name: python-app
+	        image: myrepo/python-app:v1
+
+
+ArgoCD reads this from Git and deploys it.
+
+--------------------------------------------------------------------------------
+
+Key Features of ArgoCD: 
+
+1️Automatic Deployment
+
+	Changes in Git automatically deploy to Kubernetes.
+
+2️Rollback Support
+
+	Rollback using Git:
+
+		git revert commit
+
+	ArgoCD syncs cluster to the previous version.
+
+3️Drift Detection
+
+	If someone manually changes the cluster:
+
+		kubectl edit deployment
+
+	ArgoCD detects the drift and restores the original state.
+
+4️Visual Dashboard
+
+	ArgoCD provides a UI showing:
+
+Applications
+
+Cluster state
+
+Deployment status
+
+Health status
+
+Sync status
+
+5️Multi Cluster Deployment
+
+ArgoCD can deploy to:
+
+Dev cluster
+Stage cluster
+Production cluster
+
+----------------------------------------------------------------------
+
+ArgoCD Components
+
+Main components:
+
+	ArgoCD API Server:
+
+		Handles UI and API requests.
+
+	Repo Server: 
+
+		Fetches manifests from Git.
+
+	Application Controller: 
+
+		Compares Git state with cluster state.
+
+	Redis: 
+
+		Used for caching.
+
+
+
+Real Production Flow:
+
+	Developer
+	   ↓
+	GitHub
+	   ↓
+	Jenkins CI Pipeline
+	   ↓
+	Build Docker Image
+	   ↓
+	Push to Docker Registry
+	   ↓
+	Update Helm Chart
+	   ↓
+	Git Commit
+	   ↓
+	ArgoCD Sync
+	   ↓
+	Kubernetes Deployment
+
+
+Argo CD on our Kubernetes Cluster
+
+
+Step 1 – Install Argo CD
+	We install Argo CD in its own namespace:
+
+	kubectl create namespace argocd
+
+	kubectl apply -n argocd \
+	  -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+	 Check if all pods are running:
+
+	kubectl get pods -n argocd
+
+Step 2 – Access Argo CD UI
+	Since we’re using a self-managed kubeadm cluster, we’ll use NodePort:
+
+kubectl -n argocd patch svc argocd-server \
+  -p '{"spec":{"type":"NodePort","ports":[{"name":"https","port":443,"targetPort":8080,"nodePort":30080}]}}'
+
+Get Node Public IP:
+
+	kubectl get nodes -o wide
+
+Open browser:
+
+https://<NODE_PUBLIC_IP>:30080
+
+allow security group all traffic, you should do this in your production 
+
+Step 3 – Login to Argo CD
+	Get the admin password:
+
+prints the login password key 
+
+kubectl -n argocd get secret argocd-initial-admin-secret \
+  -o jsonpath="{.data.password}" | base64 -d; echo
+
+Username: admin
+Password: (from above)
+
+
+Deploying a Sample App with Argo CD
+
+step 1  
+
+Create Namespace
+
+kubectl create namespace dev
+
+step 2
+
+push deployment files to your git repo 
+
+
+
+Step 3 – Create App in Argo CD UI
+
+	Click NEW APP.
+
+	Fill in:
+
+	Application Name: guestbook-dev
+	Project: default
+	Sync Policy: Manual (first time)
+	Repository URL: (Your fork HTTPS URL)
+	Revision: main
+	Path: guestbook
+	Cluster URL: https://kubernetes.default.svc
+	Namespace: dev
+
+
+Increase the replica count 
+
+Self-Heal Manually scale in cluster:
+
+> kubectl scale deploy guestbook-ui -n dev --replicas=5
+
+
+	change the replica count in yml and push 
+
+	deploy the application manually 
+
+	check the pods in cluster 
+
+Enable the Auto Sync and 
+	
+	change replica count in manifest file and push automatically perform the sync 
+
+
+
+

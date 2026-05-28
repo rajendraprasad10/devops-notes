@@ -1,0 +1,189 @@
+Lables and Selectors  
+
+Kubernetes Labels and Selectors
+
+1️What are Labels in Kubernetes
+
+	A Label is a key-value pair attached to Kubernetes objects.
+
+	Labels help to identify, organize, and group resources.
+
+	Commonly labeled resources:
+
+		Kubernetes Pods
+
+		Deployments
+
+		Services
+
+		Nodes
+
+		ReplicaSets
+
+		Namespaces
+
+	Example Label
+		labels:
+		  app: nginx
+		  env: production
+		  tier: frontend
+
+	Why Labels are Important
+
+	Labels Are Used For:
+
+		1️Grouping resources
+
+		Example:
+
+			All frontend pods
+			All backend pods
+			All production workloads
+
+		2️Service Discovery
+
+			Services route traffic using labels.
+
+	
+	Label Example (Pod)
+
+		apiVersion: v1
+		kind: Pod
+		metadata:
+		  name: nginx-pod
+		  labels:
+		    app: nginx
+		    env: prod
+		spec:
+		  containers:
+		  - name: nginx
+		    image: nginx
+
+		This pod has two labels:
+
+		app = nginx
+		env = prod
+
+
+================================================================
+
+What are Selectors
+
+	A Selector is used to select objects based on labels.
+
+	Selectors help Kubernetes find matching resources.
+
+	Example use cases:
+
+	Services find pods
+
+	Deployments manage pods
+
+	ReplicaSets scale pods
+
+What are Selectors
+
+	A Selector is used to select objects based on labels.
+
+	Selectors help Kubernetes find matching resources.
+
+	Example use cases:
+
+	Services find pods
+
+	Deployments manage pods
+
+	ReplicaSets scale pods
+
+Types of Selectors
+	1️Equality-based Selector
+
+Uses:
+
+	=
+	==
+	!=
+check the lables 
+
+	kubectl get pods -l app=nginx
+
+will print other lables 
+
+	kubectl get pods -l env!=prod
+
+
+Labels with Services (Important)
+
+	Services use selectors to route traffic.
+
+Pod:
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+  labels:
+    app: web # labels
+
+Service:
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-service
+spec:
+  selector:
+    app: nginx   # selector
+  ports:
+  - port: 80
+
+Flow:
+
+	Client Request
+	      ↓
+	Service
+	      ↓
+	Selector (app=web)
+	      ↓
+	Matching Pods
+
+
+============================================================================
+
+Show labels:
+
+	kubectl get pods --show-labels
+
+Filter pods:
+	kubectl get pods -l app=web
+
+Add label to running pod:
+
+	kubectl label pod nginx env=prod
+
+Remove label:
+
+	kubectl label pod nginx env-
+
+
+To check the labels
+ 
+ kubectl describe pod <pod-name> -n <Name-space>
+
+How to display only labels?
+
+	kubectl get po <pod-name> -n <Name-space> --show-labels
+
+How to see node and pod ip?
+---------------------------
+
+	kubectl get po -n test-ns -o wide
+
+How to go inside of pod?
+-------------------------
+
+	kubectl exec -it -n test-ns <podname> -- sh
+
+NOTE: take another pod ip and run the ping command to check the connection
+
+ping 10.0.1.9

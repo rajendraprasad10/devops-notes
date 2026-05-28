@@ -1,0 +1,274 @@
+
+FastAPI Microservices Architecture (4 Services)
+
+This project contains:
+
+User Service
+Product Service
+Order Service
+Notification Service
+
+All services communicate with each other using REST APIs. 
+
+
+Architecture:
+
+
+                +----------------+
+                |  API Requests  |
+                +--------+-------+
+                         |
+                         v
+                +----------------+
+                |  Order Service |
+                +----------------+
+                   |          |
+                   |          |
+          ----------          ----------
+          |                             |
+          v                             v
++----------------+          +----------------------+
+| User Service   |          | Product Service      |
++----------------+          +----------------------+
+                                         |
+                                         |
+                                         v
+                            +----------------------+
+                            | Notification Service |
+                            +----------------------+
+
+
+ORDER SERVICE
+
+This service talks to:
+
+User Service
+Product Service
+Notification Service
+
+
+Kubernetes Ingress Setup for FastAPI Microservices
+
+This setup exposes all 4 FastAPI microservices using a single Ingress Controller.
+
+Architecture
+                     Internet
+                         |
+                         v
+                +----------------+
+                |   Ingress      |
+                |  NGINX         |
+                +--------+-------+
+                         |
+        -----------------------------------------
+        |              |             |          |
+        v              v             v          v
+
+   user-service   product-service  order-service  notification-service
+
+
+Kubernetes Folder Structure
+
+k8s/
+│
+├── namespace.yaml
+│
+├── user-service/
+│   ├── deployment.yaml
+│   └── service.yaml
+│
+├── product-service/
+│   ├── deployment.yaml
+│   └── service.yaml
+│
+├── order-service/
+│   ├── deployment.yaml
+│   └── service.yaml
+│
+├── notification-service/
+│   ├── deployment.yaml
+│   └── service.yaml
+│
+└── ingress/
+    └── ingress.yaml
+
+
+INSTALL NGINX INGRESS CONTROLLER
+
+kind cluster
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
+
+
+
+Install NGINX Ingress
+self managed cluster 
+
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
+
+
+kubectl get pods -n ingress-nginx
+
+
+Verify Installation
+
+   kubectl get pods -n ingress-nginx
+
+Wait until:
+
+Running
+Then Check Service
+
+   kubectl get svc -n ingress-nginx
+
+Change Service To NodePort
+
+Edit:
+
+   kubectl edit svc ingress-nginx-controller -n ingress-nginx
+
+Change:
+
+   type: LoadBalancer
+
+to:
+
+   type: NodePort
+
+Save.
+
+
+
+CREATE INGRESS RESOURCE
+
+
+ingress/ingress.yaml
+
+8. BUILD DOCKER IMAGES
+
+docker build -t user-service:latest ./user-service
+
+docker build -t product-service:latest ./product-service
+
+docker build -t order-service:latest ./order-service
+
+docker build -t notification-service:latest ./notification-service
+
+
+and push then to docker repo 
+
+
+APPLY ALL MANIFESTS
+
+kubectl apply -f namespace.yaml
+
+kubectl apply -f user-service/
+
+kubectl apply -f product-service/
+
+kubectl apply -f order-service/
+
+kubectl apply -f notification-service/
+
+kubectl apply -f ingress/
+
+VERIFY RESOURCES:
+
+Pods
+
+kubectl get pods -n microservices
+
+Services
+
+kubectl get svc -n microservices
+
+Ingress
+
+kubectl get ingress -n microservices
+
+
+ADD HOST ENTRY
+
+Edit:
+
+sudo nano /etc/hosts
+
+Add:
+
+IP  micro.local
+
+TEST APIs
+
+User Service
+
+curl http://micro.local/users/
+
+Product Service
+
+curl http://micro.local/products/
+
+Order Service
+
+curl http://micro.local/orders/
+
+
+Describe Ingress:
+
+kubectl describe ingress microservices-ingress -n microservices
+
+Check Logs:
+
+kubectl logs -f deployment/order-service -n microservices
+
+kubectl exec -it <pod-name> -n microservices -- sh
+
+kubectl get nodes -o wide
+
+
+kubectl describe node <node-name> | grep "Container Runtime"
+
+kubectl get pods -o wide
+
+kubectl describe pod <pod-name>
+
+
+kubectl get pods -o wide
+
+
+kubectl get pods -n ingress-nginx
+
+kubectl get svc -n ingress-nginx
+
+
+kubectl edit svc ingress-nginx-controller -n ingress-nginx
+
+
+kubectl describe ingress microservices-ingress -n microservices
+
+
+kubectl get pods -n ingress-nginx -o wide
+
+
+curl -H "Host: micro.local" http://172.31.10.19:32080/users/
+
+
+kubectl edit svc ingress-nginx-controller -n ingress-nginx
+
+
+Browser/Curl
+      |
+172.31.10.19:32080
+      |
+NGINX Ingress Controller
+      |
+Ingress Rules
+      |
+ClusterIP Services
+      |
+     Pods
+
+
+kubectl get pods -n ingress-nginx
+
+Test Ingress:
+
+curl -H "Host: micro.local" http://172.31.10.19:32080/users/

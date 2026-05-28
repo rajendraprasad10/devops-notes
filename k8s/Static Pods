@@ -1,0 +1,237 @@
+Static Pods
+
+What is a Static Pod?
+
+	A Static Pod is a pod that is directly managed by the Kubelet on a specific node, not by the Kubernetes control plane.
+
+Normal Pod:
+
+	kubectl → API Server → Scheduler → Node → Kubelet → Pod
+
+But in Static Pods:
+
+	Pod YAML → Kubelet → Pod
+
+The Kubelet reads pod configuration files directly from the node filesystem and runs them.
+
+========================================================================================================================
+
+Static Pod Architecture:
+
+               Control Plane
+        +------------------------+
+        | API Server             |
+        | Scheduler              |
+        | Controller Manager     |
+        +-----------+------------+
+                    |
+                    | (Mirror Pod Created)
+                    |
+              +-----v-----+
+              |  ETCD     |
+              +-----------+
+
+                   
+
+               Worker Node
+       +----------------------------------+
+       |             Kubelet              |
+       |                                  |
+       | Watches Static Pod Directory     |
+       | /etc/kubernetes/manifests        |
+       |                                  |
+       |      Pod YAML File               |
+       |        nginx.yaml                |
+       |             |                    |
+       |             v                    |
+       |        Container Runtime         |
+       |     (containerd / CRI-O)         |
+       |             |                    |
+       |             v                    |
+       |           Running Pod            |
+       +----------------------------------+
+
+===========================================================================================================
+
+ Static Pod Flow
+	Pod YAML File
+	      |
+	      v
+	Static Pod Directory
+	/etc/kubernetes/manifests
+	      |
+	      v
+	Kubelet Detects File
+	      |
+	      v
+	Container Runtime Starts Pod
+	      |
+	      v
+	Running Pod
+	      |
+	      v
+	Mirror Pod Created in API Server
+
+Key Characteristics of Static Pods
+
+	Feature					Static Pod
+
+	Managed by				Kubelet
+	Created via				Node filesystem
+	Scheduled by			Not Scheduler
+	Managed by Deployment	No
+	API Server control		No
+	Runs on					Specific node only
+
+Where Static Pods Are Stored
+	
+	Static pod manifests are usually stored in:
+
+		/etc/kubernetes/manifests
+
+	Kubelet continuously watches this directory.
+
+	Example:
+
+	/etc/kubernetes/manifests
+	    kube-apiserver.yaml
+	    kube-controller-manager.yaml
+	    kube-scheduler.yaml
+	    etcd.yaml
+
+
+How Static Pods Work
+
+	Step-by-step workflow:
+
+		1️⃣ Kubelet watches a directory.
+
+		/etc/kubernetes/manifests
+
+		2️⃣ When a YAML file appears:
+
+		nginx-pod.yaml
+
+		3️⃣ Kubelet reads the file.
+
+		4️⃣ Kubelet instructs container runtime to start the container.
+
+		5️⃣ Pod starts running.
+
+		6️⃣ A Mirror Pod is created in API Server for visibility.
+
+		6️⃣ Mirror Pods
+
+	Even though static pods are created by Kubelet, Kubernetes still shows them in the cluster.
+
+	It creates a Mirror Pod.
+
+		Example:
+
+		kubectl get pods -n kube-system
+
+		Output:
+
+		kube-apiserver-master
+		kube-scheduler-master
+		kube-controller-manager-master
+
+		These are actually static pods.
+
+Static Pod Creation Example
+
+
+	Step 1 Create YAML File
+		
+		apiVersion: v1
+		kind: Pod
+		metadata:
+		  name: nginx-static
+		spec:
+		  containers:
+		  - name: nginx
+		    image: nginx
+		    ports:
+		    - containerPort: 80
+	Step 2 Move File to Static Pod Directory
+		
+		sudo cp nginx.yaml /etc/kubernetes/manifests/
+	
+	Step 3 Kubelet Automatically Creates Pod
+
+	Check:
+
+		kubectl get pods
+
+	Output:
+
+		nginx-static-node1
+
+
+Static Pod Naming
+
+	Static pod names include node name automatically.
+
+Example:
+
+	nginx-static-node01
+
+Reason:
+
+	Pods are tied to that specific node.
+
+=========================================================================================
+
+How to Delete Static Pods
+
+	You cannot delete static pods using kubectl.
+
+Wrong:
+
+	kubectl delete pod nginx-static
+
+Correct:
+
+	Delete the YAML file from the node.
+
+	rm /etc/kubernetes/manifests/nginx.yaml
+
+Kubelet detects removal and stops the pod.
+
+=======================================================================================================
+
+
+Real World Use of Static Pods
+
+	Static pods are used for Kubernetes control plane components.
+
+Example:
+
+	kube-apiserver
+	kube-scheduler
+	kube-controller-manager
+	etcd
+
+Example file:
+
+	/etc/kubernetes/manifests/kube-apiserver.yaml
+
+
+================================================================================
+
+
+Static Pod Limitations
+
+	Cannot be managed by
+
+	Deployment
+
+	ReplicaSet
+
+	StatefulSet
+
+		No scaling
+
+		No scheduling
+
+		No rolling updates

@@ -1,0 +1,176 @@
+What is a StatefulSet?
+
+A StatefulSet in Kubernetes is a workload API object used to manage stateful applications.
+
+Unlike Deployments (stateless), StatefulSets maintain:
+
+Stable network identity
+
+Persistent storage
+
+Ordered deployment & scaling
+
+
+Used when each pod needs a unique identity and data persistence.
+
+
+Key Features
+
+1. Stable Pod Identity
+
+Pods get fixed names:
+
+myapp-0
+myapp-1
+myapp-2
+
+These names do not change even after restart.
+
+
+Stable Network Identity
+
+Each pod gets a DNS hostname:
+
+myapp-0.myservice.namespace.svc.cluster.local
+
+Requires a Headless Service (clusterIP: None)
+
+
+Persistent Storage
+
+Each pod gets its own Persistent Volume (PV) via PVC.
+Storage is not deleted when pod restarts.
+
+
+4. Ordered Deployment & Scaling
+
+Pods are created in sequence:
+
+myapp-0 → myapp-1 → myapp-2
+
+
+Deletion happens in reverse order.
+
+
+5. Ordered Rolling Updates
+
+Updates happen one pod at a time (safe for databases).
+
+
+
+StatefulSet vs Deployment
+
+
+Feature				StatefulSet 🧠				Deployment ⚡
+
+Pod Identity			Stable						Random
+
+Storage					Persistent					Ephemeral
+
+Scaling					Ordered						Parallel
+
+Use Case				Databases					Web apps
+
+
+When to Use StatefulSet?
+
+	Use it when your application needs:
+
+	Databases (e.g., MySQL, MongoDB)
+
+	Distributed systems (Kafka, Zookeeper)
+
+	Applications with session/state
+
+	Leader-follower architecture
+
+
+Important Components
+
+Headless Service
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+spec:
+  clusterIP: None
+  selector:
+    app: nginx
+
+
+Example Manifest file 
+
+write here 
+
+
+
+Commands 
+
+1. Create StatefulSet
+
+kubectl apply -f statefulset.yaml
+
+2. Get StatefulSets
+
+kubectl get statefulsets
+
+
+3. Describe StatefulSet
+
+kubectl describe statefulset <name>
+
+
+4. Check Pods of StatefulSet
+
+kubectl get pods
+
+5. Scale StatefulSet
+
+kubectl scale statefulset <name> --replicas=5
+
+6. Delete StatefulSet
+
+kubectl delete statefulset <name>
+
+Important:
+
+Pods are deleted in reverse order
+Volumes (PVCs) are NOT deleted automatically
+
+7. Delete with PVC Cleanup
+
+kubectl delete pvc -l app=<label>
+
+8. View Persistent Volume Claims (PVC)
+
+kubectl get pvc
+
+
+9. Logs of Specific Pod
+
+kubectl logs nginx-0
+
+
+10. Exec into Pod
+
+kubectl exec -it nginx-0 -- /bin/bash
+
+
+12. Restart StatefulSet Pods
+
+kubectl rollout restart statefulset <name>
+
+
+
+13. Check Rollout Status
+
+kubectl rollout status statefulset <name>
+
+14. Undo Rollout (if configured)
+
+kubectl rollout undo statefulset <name>
+
+15. Get Headless Service
+
+kubectl get svc

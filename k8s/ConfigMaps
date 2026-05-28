@@ -1,0 +1,120 @@
+What is a ConfigMap?
+
+
+A ConfigMap in Kubernetes is used to store non-sensitive configuration data in key-value pairs.
+
+It allows you to separate configuration from application code
+
+
+Simple Definition
+
+ConfigMap = External configuration storage for your app
+
+
+Why Use ConfigMap?
+
+Avoid hardcoding config in code
+
+Easily update configuration without rebuilding image
+
+Reuse config across multiple pods
+
+Decouple app & environment
+
+
+Real-Time Examples
+
+Use Case				Example
+
+App config				DB_HOST, DB_PORT
+
+Feature flags			ENABLE_CACHE=true
+
+Config files			nginx.conf
+
+Environment values		DEBUG=false
+
+
+ConfigMap YAML Example
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: dev
+data:
+  DB_HOST: "postgres-service"
+  DB_PORT: "5432"
+  DEBUG: "true"
+
+
+Pod Using ConfigMap (Env Example)
+
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: config-demo-pod
+  namespace: dev
+spec:
+  containers:
+  - name: demo-container
+    image: nginx
+    env:
+    - name: DB_HOST
+      valueFrom:
+        configMapKeyRef:
+          name: app-config
+          key: DB_HOST
+
+
+Important Commands
+
+Create ConfigMap
+
+kubectl apply -f configmap.yaml
+
+OR
+
+kubectl create configmap app-config --from-literal=DB_HOST=postgres
+
+
+Get ConfigMaps
+
+kubectl get configmaps
+
+Describe ConfigMap
+
+kubectl describe configmap app-config
+
+View YAML
+
+kubectl get configmap app-config -o yaml
+
+Delete ConfigMap
+
+kubectl delete configmap app-config
+
+
+Check inside Pod
+
+kubectl exec -it <pod-name> -- env | grep DB_HOST
+
+OR (for volume)
+
+kubectl exec -it <pod-name> -- ls /etc/config
+
+
+Advantages
+
+	✔ Easy configuration management
+	✔ No image rebuild needed
+	✔ Reusable across pods
+	✔ Supports env & files
+
+
+🔹 Limitations
+	
+	Not for sensitive data
+	Needs pod restart (env vars case)
+	Size limit (~1MB)

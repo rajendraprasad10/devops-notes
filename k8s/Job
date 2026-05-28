@@ -1,0 +1,152 @@
+Job
+
+
+A Kubernetes Job is used to run a task one time until completion.
+
+Unlike Deployments, Jobs are NOT for continuously running applications.
+
+
+Main Purpose of Job
+
+A Job ensures:
+
+Task runs successfully and completes
+
+even if:
+
+pod crashes
+
+node fails
+
+container exits unexpectedly
+
+Kubernetes automatically retries.
+
+Deployment vs Job
+
+Feature			Deployment				Job
+Purpose			Long-running app	One-time task
+Pod Behavior	Always running		Runs and exits
+Restart			Keeps alive forever	Stops after success
+Example			FastAPI app			DB migration
+
+
+Real Use Cases
+
+1. Database Migration
+
+Example:
+
+Run Alembic migration once
+
+	python manage.py migrate
+
+
+2. Backup Job
+
+	Take PostgreSQL backup every night
+
+3. Batch Processing
+
+	Process 1 million records
+
+4. ML Training
+
+	Train model once
+
+5. File Conversion
+
+	Convert uploaded videos
+
+6. Data Import
+
+	Import CSV into DB
+
+7. Cleanup
+
+	Delete old logs/files
+	Simple Job Example
+
+create 
+
+job.yaml
+-------------------
+apiVersion: batch/v1
+kind: Job
+
+metadata:
+  name: hello-job
+
+spec:
+  template:
+
+    spec:
+      containers:
+        - name: hello
+
+          image: busybox
+
+          command:
+            - sh
+            - -c
+            - echo "Hello Kubernetes Job"
+
+      restartPolicy: Never
+
+=====================================
+Apply Job
+
+kubectl apply -f job.yaml
+
+Check Jobs
+kubectl get jobs
+
+
+Example:
+
+NAME        COMPLETIONS   DURATION   AGE
+hello-job   1/1           5s         10s
+
+=========================================
+Check Pods
+
+kubectl get pods
+
+Pod status:
+
+Completed
+
+Check Logs
+
+kubectl logs job/hello-job
+
+Output:
+
+	Hello Kubernetes Job
+
+	Important Field
+
+	restartPolicy
+
+Usually:
+
+	restartPolicy: Never
+
+or:
+
+restartPolicy: OnFailure
+
+	Parallel Jobs
+
+Run multiple tasks simultaneously.
+
+Example:
+
+	parallelism: 3
+	completions: 6
+
+Meaning:
+
+	3 pods run at same time
+
+	total 6 successful executions required

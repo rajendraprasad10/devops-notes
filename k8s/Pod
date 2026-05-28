@@ -1,0 +1,284 @@
+Pod
+
+Introduction: 
+
+Explain what problem Kubernetes solves.
+
+Talking Points
+
+	Traditional deployment: application running on servers
+
+	Containerization with Docker
+
+	Need for orchestration when containers scale
+
+	Kubernetes manages containers automatically
+
+Key Concept
+
+	👉 The smallest deployable unit in Kubernetes is a Pod.
+
+
+	“In Kubernetes we don’t deploy containers directly. We deploy Pods, and Pods contain one or more containers.”
+
+
+================================================================================
+
+What is a Pod?
+
+Definition
+
+	A Pod is the smallest deployable unit in Kubernetes that can run one or more containers.
+
+	Pod Characteristics
+
+	Each Pod has its unique IP Address within the cluster.
+
+	Contains one or more containers
+
+	Containers share:
+
+		Network
+
+		Storage
+
+		IP Address
+
+		Runs on a Node
+
+================================================================================
+
+Architecture:
+
+Kubernetes Cluster
+       │
+       ├── Node 1
+       │      └── Pod
+       │           ├── Container A
+       │           └── Container B
+       │
+       └── Node 2
+              └── Pod
+                   └── Container
+
+================================================================================
+Pod Lifecycle
+
+Explain states.
+
+Pod Phases
+
+	1️⃣ Pending
+	Pod accepted but containers not started.
+
+	2️⃣ Running
+	Containers are running.
+
+	3️⃣ Succeeded
+	Containers finished successfully.
+
+	4️⃣ Failed
+	Container exited with error.
+
+	5️⃣ Unknown
+	Kubernetes cannot determine state.
+
+================================================================================
+
+Kubernetes Pod Creation Flow
+
+	    +-----------------------+
+        |   User / kubectl      |
+        | pod.yaml definition   |
+        +----------+------------+
+                   |
+                   v
+        +-----------------------+
+        |      API Server       |
+        |  Receives Pod Request |
+        +----------+------------+
+                   |
+                   v
+        +-----------------------+
+        |        ETCD           |
+        | Stores Pod Definition |
+        +----------+------------+
+                   |
+                   v
+        +-----------------------+
+        |       Scheduler       |
+        | Finds Unscheduled Pod |
+        | Selects Best Node     |
+        +----------+------------+
+                   |
+                   v
+        +-----------------------+
+        |        Node           |
+        |       Kubelet         |
+        | Detects Scheduled Pod |
+        +----------+------------+
+                   |
+                   v
+        +-----------------------+
+        |  Container Runtime    |
+        | (containerd / CRI-O)  |
+        | Starts Containers     |
+        +----------+------------+
+                   |
+                   v
+        +-----------------------+
+        |       Running Pod     |
+        | Lifecycle tracked in  |
+        |        ETCD           |
+        +-----------------------+
+
+================================================================================
+
+
+Pod Limitations
+
+	Pods are not meant to be created manually in production.
+
+Problems:
+
+	Pods can die  
+
+	Pods are not auto recreated
+
+Instead we use:
+
+	Deployment
+
+	ReplicaSet
+
+	StatefulSet
+
+	DaemonSet
+
+
+================================================================================
+
+Best Practices
+
+	Use Deployments instead of Pods
+	✔ Use resource limits
+	✔ Use health checks
+	✔ Avoid multi-container pods unless needed
+
+Type Of Pods:
+
+
+One-container-per-pod or Single Container Pod. 
+
+	Single Container Pod (Most Common)
+
+	This is the most commonly used Pod type.
+
+	👉 One Pod contains only one container.
+
+	Diagram
+	+----------------------+
+	|        POD           |
+	|                      |
+	|   +---------------+  |
+	|   |   Container   |  |
+	|   |    (App)      |  |
+	|   |   nginx       |  |
+	|   +---------------+  |
+	|                      |
+	+----------------------+
+
+================================================================================
+
+
+Multi-container-pod or Sidecar  containers  
+
+	In this case, a Pod runs multiple containers together.
+
+		Containers share:
+
+			Network
+
+			Storage
+
+			Same IP
+
+			Lifecycle
+
+		Real-World Architecture
+		+--------------------------------+
+		|              POD               |
+		|                                |
+		|  Django API Container          |
+		|                                |
+		|  +--------------------------+  |
+		|  | Django App               |  |
+		|  +--------------------------+  |
+		|                                |
+		|  Sidecar Container             |
+		|                                |
+		|  +--------------------------+  |
+		|  | Log Forwarder (filebeat)  | |
+		|  +--------------------------+  |
+		|                                |
+		+--------------------------------+
+
+
+================================================================================
+
+
+Creating Your First Pod
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+  labels:
+    app: nginx
+spec:
+  containers:
+  - name: nginx-container
+    image: nginx:latest
+    ports:
+      - containerPort: 80
+
+kubectl apply -f pod.yaml
+
+kubectl get pods
+
+kubectl describe pod nginx-pod
+
+
+kubectl logs nginx-pod
+
+================================================================================
+
+side car contianer example 
+
+	apiVersion: v1
+	kind: Pod
+	metadata:
+	  name: sidecar-pod
+	spec:
+	  containers:
+	  
+	  - name: app-container
+	    image: nginx
+	    
+	  - name: log-container
+	    image: busybox
+	    command: ["sh", "-c", "while true; do echo logging; sleep 5; done"]
+
+================================================================================
+
+1. In which worker node my pod is running how to check?
+
+		Ans: ``
+
+
+2. what is the meaning of 1/1, 2/2, 1/2, 0/2 ?
+
+		1/1 means inside a pod we have a one container and that is running
+
+      	0/1 means inside a pod we have a one container and that is not running
+

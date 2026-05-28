@@ -1,0 +1,192 @@
+CronJob
+
+
+CronJob
+
+For scheduled jobs.
+
+Equivalent of Linux cron.
+
+Example:
+
+	Run backup every midnight
+
+
+CronJob Example
+
+
+apiVersion: batch/v1
+kind: CronJob
+
+metadata:
+  name: backup-job
+
+spec:
+  schedule: "0 0 * * *"
+
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: backup
+
+              image: busybox
+
+              command:
+                - sh
+                - -c
+                - echo "Running backup"
+
+          restartPolicy: OnFailure
+
+
+Deployment vs Job vs CronJob
+
+Resource			Purpose
+
+Deployment			Always-running apps
+Job	One-time 		task
+CronJob				Scheduled repeated task
+
+
+1. Create CronJob YAML
+cronjob.yaml
+apiVersion: batch/v1
+kind: CronJob
+
+metadata:
+  name: backup-cronjob
+
+spec:
+  schedule: "*/1 * * * *"
+
+  jobTemplate:
+    spec:
+      template:
+        spec:
+
+          containers:
+            - name: backup
+
+              image: busybox
+
+              command:
+                - sh
+                - -c
+                - date; echo "Backup Running"
+
+          restartPolicy: OnFailure
+
+
+
+2. Apply CronJob
+
+	kubectl apply -f cronjob.yaml
+
+
+3. List CronJobs
+
+	kubectl get cronjobs
+
+Short form:
+
+kubectl get cj
+
+4. Describe CronJob
+
+kubectl describe cronjob backup-cronjob
+
+5. Check Jobs Created By CronJob
+
+kubectl get jobs
+
+6. Check Pods Created
+
+kubectl get pods
+
+7. View Logs
+
+	Get Pod Name
+
+	kubectl get pods
+
+Then:
+
+	kubectl logs <pod-name>
+
+OR directly:
+
+	kubectl logs job/<job-name>
+
+8. Delete CronJob
+
+	kubectl delete cronjob backup-cronjob
+
+Short form:
+
+	kubectl delete cj backup-cronjob
+
+9. Suspend CronJob
+
+Pause schedule execution:
+
+	kubectl patch cronjob backup-cronjob \
+-p '{"spec":{"suspend":true}}'
+
+
+10. Resume CronJob
+
+kubectl patch cronjob backup-cronjob \
+-p '{"spec":{"suspend":false}}'
+
+
+11. Run CronJob Immediately (Manual Trigger)
+
+Create Job from CronJob:
+
+kubectl create job manual-job \
+--from=cronjob/backup-cronjob
+
+
+12. Delete Jobs
+
+kubectl delete job <job-name>
+
+Delete all jobs:
+
+kubectl delete jobs --all
+
+13. Watch CronJob Execution
+
+kubectl get pods -w
+
+14. Watch Jobs
+
+kubectl get jobs -w
+
+15. Edit CronJob
+
+	kubectl edit cronjob backup-cronjob
+
+16. Get YAML
+	
+	kubectl get cronjob backup-cronjob -o yaml
+
+17. Export YAML
+	
+	kubectl get cronjob backup-cronjob -o yaml > cronjob.yaml
+
+18. Check Events
+
+	kubectl get events --sort-by=.metadata.creationTimestamp
+
+Common Cron Schedules
+
+Schedule	Meaning
+
+"* * * * *"	every minute
+"*/5 * * * *"	every 5 minutes
+"0 * * * *"	every hour
+"0 0 * * *"	every midnight
+"0 9 * * 1"	every Monday 9 AM
