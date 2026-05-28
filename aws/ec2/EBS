@@ -1,1 +1,310 @@
 EBS
+
+AWS EBS Notes (Elastic Block Store)
+
+
+What is EBS?
+
+	Amazon Web Services EBS (Elastic Block Store) is block storage used with EC2 instances.
+
+Think of EBS like:
+
+	Hard Disk for EC2
+
+Used for:
+
+	OS storage
+	Databases
+	Application files
+	Persistent storage
+
+
+Types of EBS Volumes
+
+
+Type			Use Case
+gp3				General purpose SSD
+io1/io2			High-performance databases
+st1				Throughput workloads
+sc1				Cold storage
+
+
+EBS Important Points
+
+Feature							Description
+
+Persistent						Data remains after reboot
+AZ-specific						EBS exists in one Availability Zone
+Can detach/attach				Move between instances
+Snapshots						Backup to S3
+Encryption						Supported
+Resize							Increase size anytime
+
+-----------------------------------------------------------
+
+Step 1 — Create EBS Volume
+
+	Go to:
+
+		→ EC2 → Elastic Block Store → Volumes → Create Volume
+
+	Configuration:
+
+		Field				Value
+
+		Volume Type			gp3
+		Size				10 GB
+		Availability Zone	ap-south-2a
+
+	IMPORTANT:
+
+		EBS and EC2 must be in SAME Availability Zone
+
+
+
+	Example:
+
+		Resource	AZ
+		EC2			ap-south-2a
+		EBS			ap-south-2a
+
+
+What is different AZ's used for both? 
+
+
+----------------------------------------------------------------------
+
+
+
+Step 2 — Attach EBS to EC2 Instance
+
+	After creating volume:
+
+		→ Select Volume
+
+		→ Actions → Attach Volume
+
+	Configuration:
+
+		Field		Value
+
+		Instance	Select EC2
+		Device Name	/dev/xvdf
+
+	Example:
+
+		/dev/xvdf
+
+
+--------------------------------------------------------------------------------
+
+Step 3 — Verify EBS Inside EC2
+
+	SSH into EC2.
+
+	Check disks:
+
+		lsblk
+
+Example output:
+
+	NAME    MAJ:MIN RM SIZE RO TYPE MOUNTPOINT
+	xvda    202:0    0   8G  0 disk
+	└─xvda1 202:1    0   8G  0 part /
+
+xvdf    202:80   0  10G  0 disk
+
+Here:
+
+	xvdf
+
+	is new EBS volume.
+
+
+-----------------------------------------------------------------------------
+
+
+Step 4 — Create Filesystem
+
+Format disk:
+
+	sudo mkfs -t ext4 /dev/xvdf
+
+
+----------------------------------------------------------------------------
+
+Step 5 — Mount EBS Volume
+
+	Create directory:
+
+		sudo mkdir /data
+
+	Mount volume:
+
+		sudo mount /dev/xvdf /data
+
+	Verify:
+
+		df -h
+
+
+--------------------------------------------------------------------------------
+
+
+Step 6 — Make Mount Permanent
+
+	Open fstab:
+
+		sudo nano /etc/fstab
+
+	Add:
+
+		/dev/xvdf   /data   ext4   defaults,nofail   0   2
+
+	Save and exit.
+
+	Test:
+
+		sudo mount -a
+
+
+----------------------------------------------------------------------------
+
+
+Step 7 — Create Data in EBS
+
+	Example:
+
+		echo "Hello EBS" | sudo tee /data/test.txt
+
+	Check:
+
+		cat /data/test.txt
+
+
+
+--------------------------------------------------------------------------------
+
+Step 8 — Create Snapshot
+
+	Go to:
+
+		→ EC2 → Volumes
+
+	Select volume.
+
+		Actions → Create Snapshot
+
+
+
+	Configuration
+		Field			Value
+
+		Name			demo-snapshot
+		Description		Backup of EBS
+
+		Click:
+
+		Create Snapshot
+
+
+-------------------------------------------------------------------------
+
+
+What is Snapshot?
+
+	Snapshot is:
+
+		Backup of EBS volume stored in S3
+
+	Benefits:
+
+		Backup
+
+			Disaster Recovery
+			Clone servers
+			Create new volumes
+
+------------------------------------------------------------------------
+
+
+Step 9 — Create New EBS from Snapshot
+
+	Go to:
+
+		→ EC2 → Snapshots
+
+	Select snapshot.
+
+		Actions → Create Volume from Snapshot
+
+	Configuration
+	
+	Field			Value
+
+	Volume Type		gp3
+	Size			Same or Bigger
+	AZ				ap-south-2a
+
+	Click:
+
+		Create Volume
+
+
+---------------------------------------------------------------------------
+
+Step 10 — Attach New EBS to Another EC2
+
+	Select newly created volume.
+
+		Actions → Attach Volume
+
+	Configuration
+		Field			Value
+		Instance			Another EC2
+		Device Name			/dev/xvdf
+
+
+----------------------------------------------------------------------------
+
+
+Step 11 — Verify Data on New EC2
+
+	SSH into second EC2.
+
+	Check disk:
+
+		lsblk
+
+	Mount volume:
+
+		sudo mkdir /restore
+		sudo mount /dev/xvdf /restore
+
+	Verify data:
+
+		ls /restore
+
+	Example:
+
+		test.txt
+
+	Read file:
+
+		cat /restore/test.txt
+
+	Output:
+
+		Hello EBS
+
+
+Architecture Flow:
+
+
+	EBS Volume
+	    ↓
+	Snapshot
+	    ↓
+	Create New EBS
+	    ↓
+	Attach to Another EC2

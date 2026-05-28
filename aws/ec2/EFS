@@ -1,1 +1,363 @@
 EFS
+
+
+Production Architecture
+                
+
+                Internet
+                    |
+            +----------------+
+            | Load Balancer  |
+            +----------------+
+              |     |     |
+      --------------------------------
+      |              |               |
++------------+ +------------+ +------------+
+| EC2 App 1  | | EC2 App 2  | | EC2 App 3  |
++------------+ +------------+ +------------+
+       \           |            /
+        \          |           /
+         ----------------------
+                 |
+          +--------------+
+          |     EFS      |
+          +--------------+
+
+
+
+
+AWS EFS (Elastic File System) Notes
+
+
+What is EFS?
+
+	Amazon Web Services EFS (Elastic File System) is a fully managed, scalable, cloud-based Network File System (NFS) service provided by AWS.
+
+	It allows multiple EC2 instances to access the same shared file system simultaneously.
+
+	Think of EFS like a shared storage drive in the cloud.
+
+
+
+	Key Features of EFS
+		Feature									Description
+		
+		Fully Managed		AWS handles servers, storage, scaling, and maintenance
+
+		Elastic Scaling		Automatically grows and shrinks as files are added/removed
+		Shared Storage		Multiple EC2 instances can mount the same filesystem
+
+		Highly Available	Data is replicated across multiple Availability Zones
+
+		Durable				Designed for high durability
+		
+		NFS Protocol		Uses NFSv4.1 / NFSv4.0
+		
+		Serverless 
+		Compatible			Works with Lambda, ECS, EKS
+
+
+
+EFS Architecture
+
+        +----------------+
+        |  EC2 Instance  |
+        +----------------+
+                |
+                |
+        +----------------+
+        |  Mount Target  |
+        +----------------+
+                |
+        +----------------+
+        |      EFS       |
+        +----------------+
+                |
+        +----------------+
+        |  EC2 Instance  |
+        +----------------+
+
+
+How EFS Works?
+
+	Create EFS filesystem
+	Create mount targets in VPC subnets
+	Attach security groups
+	Mount EFS on EC2 using NFS client
+	Multiple servers can access the same files
+
+
+EFS Use Cases
+
+1. Shared Web Content
+
+	Multiple web servers share the same files.
+
+	Example:
+
+		Apache/Nginx servers
+		Shared uploads directory
+
+
+2. Kubernetes Persistent Storage
+
+	Used with:
+
+		EKS
+		Kubernetes Stateful applications
+
+
+3. DevOps & CI/CD
+
+	Shared artifacts/logs between:
+
+	Jenkins agents
+	Build servers
+
+
+
+EFS Performance Modes
+
+	1. General Purpose (Default)
+		Low latency
+	Best for:
+		Web servers
+		CMS
+		Small applications
+
+
+AWS EFS + Auto Scaling EC2 Shared Storage Setup
+
+	This setup ensures:
+
+	✅ Multiple EC2 instances share the same data
+	✅ New Auto Scaling instances automatically access shared files
+	✅ Data persists even when EC2 instances terminate
+	✅ Perfect for:
+
+		Django apps
+		Uploads folder
+		ML models
+		Shared logs
+		WordPress
+		DevOps artifacts
+
+
+Architecture
+                
+                +-------------------+
+                |   AWS EFS         |
+                | Shared FileSystem |
+                +-------------------+
+                         |
+          ---------------------------------
+          |               |               |
+   +-------------+ +-------------+ +-------------+
+   | EC2 Instance| | EC2 Instance| | EC2 Instance|
+   | AutoScaling | | AutoScaling | | AutoScaling |
+   +-------------+ +-------------+ +-------------+
+          |
+    Shared Files
+
+
+------------------------------------------------------
+
+Step-by-Step Process
+
+Step 1: Create EFS
+
+	Go to:
+
+		AWS EFS Console
+
+	Create filesystem:
+
+		Name: shared-efs
+		VPC: Select your VPC
+		Enable automatic backups (optional)
+
+
+----------------------------------------------------------------------
+
+Step 2: Configure Network
+
+	EFS needs:
+
+		Mount Targets
+		Security Groups
+
+
+	Create Security Group for EFS:
+
+	Inbound Rules
+	
+		Type	Port	Source
+
+		NFS		2049	EC2 Security Group
+
+	Example:
+
+		SG Name: efs-sg
+		
+	EC2 Security Group
+
+	Allow outbound traffic to:
+
+		Port 2049
+
+
+--------------------------------------------------------------------------
+
+Step 3: Create Mount Targets
+
+	AWS automatically creates mount targets in subnets.
+
+	Best practice:
+
+		Create in every Availability Zone used by Auto Scaling.
+
+------------------------------------------------------------------------
+
+Step 4: Launch EC2 and Install EFS Utilities
+
+	Ubuntu
+		sudo apt update
+		sudo apt install nfs-common -y
+	
+	Amazon Linux
+		sudo yum install -y amazon-efs-utils
+
+
+
+-----------------------------------------------------------------
+
+
+
+Step 5: Mount EFS
+
+	Create mount directory:
+
+		sudo mkdir /shared
+
+	Mount EFS:
+
+		sudo mount -t nfs4 \
+		fs-xxxxxx.efs.ap-south-1.amazonaws.com:/ \
+		/shared
+
+	Verify:
+
+		df -h
+
+
+
+-----------------------------------------------------------------
+
+Step 6: Make Permanent Mount
+
+	Edit:
+
+		sudo nano /etc/fstab
+
+	Add:
+
+		fs-xxxxxx.efs.ap-south-1.amazonaws.com:/ /shared nfs4 defaults,_netdev 0 0
+
+	Test:
+
+		sudo mount -a
+
+
+--------------------------------------------------------------------
+
+
+
+Step 7: Create Launch Template
+
+	Go to:
+
+		AWS EC2 Launch Templates
+
+	Include:
+
+		AMI
+		Instance type
+		Security groups
+		IAM role
+
+
+Step 8: Add User Data Script
+
+	This is VERY IMPORTANT.
+
+	Whenever Auto Scaling launches new EC2 instances,
+	they automatically mount EFS.
+
+		User Data Script (Ubuntu)
+		#!/bin/bash
+
+		apt update -y
+		apt install -y nfs-common
+
+		mkdir -p /shared
+
+		mount -t nfs4 \
+		fs-xxxxxx.efs.ap-south-1.amazonaws.com:/ \
+		/shared
+
+		echo "fs-xxxxxx.efs.ap-south-1.amazonaws.com:/ /shared nfs4 defaults,_netdev 0 0" >> /etc/fstab
+
+
+
+
+Step 9: Create Auto Scaling Group
+
+	Go to:
+
+		AWS Auto Scaling Console
+
+	Attach:
+
+		Launch template
+		Subnets
+		Load balancer (optional)
+
+	Configure:
+
+		Min instances
+		Max instances
+		Desired capacity
+
+
+
+Step 10: Test Auto Scaling
+
+	Scale instances manually.
+
+	Verify:
+
+		ls /shared
+
+	Create file in one server:
+
+		echo "hello" > /shared/test.txt
+
+	Check in another server:
+
+		cat /shared/test.txt
+
+	You will see the same file.
+
+
+
+
+
+Types of EFS Backups
+
+
+Type							Description
+
+Automatic							AWS-managed scheduled backups
+On-Demand							Manual backup anytime
+Cross-Region						Disaster recovery
+Cross-Account						Centralized backup management

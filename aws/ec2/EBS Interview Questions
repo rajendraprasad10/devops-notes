@@ -1,0 +1,129 @@
+EBS Interview Questions 
+
+
+
+1. Difference Between EBS and Instance Store
+
+	EBS						Instance Store
+
+	Persistent				Temporary
+	Network storage			Physically attached
+	Can snapshot			Cannot snapshot
+	Safer					Data lost on stop
+
+
+2. EBS Volume States
+
+
+	State					Meaning
+
+	Creating					Volume creation
+	Available					Ready to attach
+	In-use						Attached to EC2
+	Deleting					Removing
+
+
+3. Snapshot Notes
+
+	Feature					Description
+
+	Incremental				Only changed blocks stored
+	Stored in S3			Managed by AWS
+	Cross-region copy		Supported
+	Encryption				Supported
+
+
+4. Resize EBS Volume
+
+	Increase size:
+
+		→ Volumes → Modify Volume
+
+	Then inside Linux:
+
+		Check filesystem:
+
+			lsblk
+
+	Grow partition:
+
+			sudo growpart /dev/xvda 1
+
+	Resize filesystem:
+
+		sudo resize2fs /dev/xvda1
+
+
+
+5. Detach EBS Volume
+
+	Go to:
+
+		→ Volumes → Actions → Detach
+
+	IMPORTANT:
+
+		Unmount before detach:
+
+		sudo umount /data
+
+6. Delete EBS
+
+	Delete only after:
+
+		Snapshot created
+		Data backup confirmed
+
+	Delete:
+
+		→ Volumes → Delete
+
+
+
+Best Practices:
+
+	Use gp3
+
+	Better performance and cheaper.
+
+	Enable Encryption
+
+		Use:
+
+			Amazon Web Services KMS
+			Automate Snapshots
+
+	Use:
+
+		Amazon Web Services Data Lifecycle Manager
+		Monitor EBS
+
+	Use:
+
+		Amazon Web Services CloudWatch
+
+	Metrics:
+
+		IOPS
+		Throughput
+		Burst balance
+		Queue length
+
+
+Final Flow Summary
+
+	Create EBS
+	    ↓
+	Attach to EC2
+	    ↓
+	Format + Mount
+	    ↓
+	Store Data
+	    ↓
+	Create Snapshot
+	    ↓
+	Create New EBS
+	    ↓
+	Attach to Another EC2
+	    ↓
+	Restore Data
