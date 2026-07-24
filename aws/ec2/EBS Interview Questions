@@ -127,3 +127,388 @@ Final Flow Summary
 	Attach to Another EC2
 	    ↓
 	Restore Data
+
+
+
+3. Can an EBS volume exist without an EC2 instance?
+
+	Answer:
+		Yes. EBS volumes are independent resources and can exist unattached.
+
+
+4. Can one EBS volume be attached to multiple EC2 instances?
+
+	Answer:
+		Normally No.
+
+		Exception:
+
+			Multi-Attach enabled volumes
+			Supported only on specific volume types and instance types
+
+
+5. What are the EBS volume types?
+
+	Answer:
+
+		gp3 (General Purpose SSD)
+		gp2 (Older SSD)
+		io1
+		io2
+		st1 (Throughput Optimized HDD)
+		sc1 (Cold HDD)
+
+7. Where are EBS Snapshots stored?
+
+	Answer:
+		Snapshots are stored in AWS-managed storage (internally backed by S3).
+
+
+8. Are EBS snapshots incremental?
+
+	Answer:
+		Yes.
+
+Example:
+
+	Snapshot 1 → Full Backup
+	Snapshot 2 → Changed Blocks Only
+	Snapshot 3 → Changed Blocks Only
+
+	Only changed blocks are stored.
+
+
+
+
+9. Can you create a snapshot while the volume is attached?
+
+	Answer:
+		Yes.
+
+	AWS creates a point-in-time snapshot without detaching the volume.
+
+
+
+
+10. What happens if data is changing during snapshot creation?
+
+	Answer:
+		Snapshot is crash-consistent.
+
+	For databases:
+
+		fsfreeze
+		database flush
+		snapshot
+
+	is recommended.
+
+	Restore Questions
+
+
+
+11. How do you restore data from a snapshot?
+
+	Answer:
+
+		Snapshot
+		   ↓
+		Create Volume
+		   ↓
+		Attach to EC2
+		   ↓
+		Mount
+
+
+
+
+12. Can you create a larger volume from a snapshot?
+
+	Answer:
+		Yes.
+
+	Example:
+
+		Snapshot = 10 GB
+		New Volume = 20 GB
+
+		Allowed.
+
+
+
+
+13. Can you create a smaller volume from a snapshot?
+
+	Answer:
+		No.
+
+	Example:
+
+		Snapshot = 10 GB
+		New Volume = 5 GB
+
+		Not allowed.
+
+
+
+
+14. Does restoring a snapshot restore permissions and files?
+
+	Answer:
+		Yes.
+
+	Entire filesystem is restored including:
+
+		Files
+		Directories
+		Permissions
+		Ownership
+		Metadata
+		Linux EBS Questions
+
+
+
+
+15. How do you check attached disks?
+	
+	lsblk
+
+16. How do you check filesystem type?
+
+	sudo file -s /dev/nvme1n1
+
+
+17. How do you identify volume UUID?
+	
+	sudo blkid
+
+
+18. How do you make a mount persistent?
+
+	Edit:
+
+		sudo nano /etc/fstab
+
+	Example:
+
+		UUID=xxxx /data ext4 defaults,nofail 0 2
+
+
+19. What is UUID?
+
+	Answer:
+		Universally Unique Identifier assigned to a filesystem.
+
+	Example:
+
+		a8659d8f-c5e0-4a74-b387-ab5ec40b9b86
+
+	Used in /etc/fstab because device names can change.
+
+
+
+20. Why use UUID instead of /dev/nvme1n1?
+
+	Answer:
+
+		Device names can change after reboot.
+
+		UUID remains constant.
+
+		Troubleshooting Questions
+
+
+
+
+21. Why does mount fail with:
+
+	special device /dev/nvme1n1p1 does not exist
+
+Answer:
+
+	Partition does not exist.
+
+	Example:
+
+	/dev/nvme1n1
+
+	exists but
+
+	/dev/nvme1n1p1
+
+	does not.
+
+
+
+
+22. How do you verify whether a volume contains a filesystem?
+
+	sudo file -s /dev/nvme1n1
+
+
+23. What does this output mean?
+	
+	Linux rev 1.0 ext4 filesystem data
+
+	Answer:
+
+		Filesystem already exists.
+
+		No formatting required.
+
+24. What does "needs journal recovery" mean?
+
+	Answer:
+
+		Filesystem was not cleanly unmounted before snapshot creation.
+
+25. How do you repair an ext4 filesystem?
+
+		sudo e2fsck -f /dev/nvme1n1
+
+26. How do you mount a filesystem read-only?
+
+	sudo mount -o ro /dev/nvme1n1 /restore
+	
+	DevOps Scenario Questions
+	
+27. Root volume is full. What will you do?
+
+	Approach:
+
+		Create larger EBS volume.
+		Attach to EC2.
+		Move application data.
+		Update mounts.
+		Validate.
+
+		Alternative:
+
+		Modify Volume
+		    ↓
+		Increase Size
+		    ↓
+		Grow Filesystem
+
+
+28. How do you increase EBS volume size without downtime?
+
+	AWS:
+
+		Volumes
+		  → Modify Volume
+
+	Linux:
+
+		sudo growpart /dev/nvme0n1 1
+		sudo resize2fs /dev/nvme0n1p1
+
+
+29. How do you automate EBS backups?
+
+	Use:
+
+		AWS Data Lifecycle Manager (DLM)
+		AWS Backup
+
+
+30. How would you back up a production database volume?
+
+Answer:
+
+	Flush writes
+	Create snapshot
+	Tag snapshot
+	Verify restore process
+
+
+31. What is crash-consistent vs application-consistent backup?
+
+	Crash Consistent	Application Consistent
+	Snapshot only	Application quiesced
+	Faster	Safer
+	Possible recovery needed	Clean recovery
+
+
+32. How do you recover from accidental data deletion?
+
+Answer:
+
+	Latest Snapshot
+	      ↓
+	Create Volume
+	      ↓
+	Attach
+	      ↓
+	Mount
+	      ↓
+	Copy Required Files
+
+
+33. How do you migrate data between EC2 instances?
+
+	Method 1: Snapshot
+
+	Volume
+	  ↓
+	Snapshot
+	  ↓
+	New Volume
+	  ↓
+	Attach to New EC2
+
+	Method 2: rsync
+
+	rsync -avz source destination
+
+
+34. What is the purpose of the nofail option in /etc/fstab?
+
+	Example:
+
+	UUID=xxxx /data ext4 defaults,nofail 0 2
+
+	Answer:
+
+	System continues booting even if the EBS volume is unavailable.
+
+35. Why is gp3 preferred over gp2?
+
+	Answer:
+
+		Lower cost
+		Better performance
+		Independent control of:
+		IOPS
+		Throughput
+		Storage size
+		Real Production Question
+
+
+36. You restored a snapshot and lsblk shows:
+	
+	nvme1n1 10G
+
+but no:
+
+	nvme1n1p1
+
+What would you do?
+
+Answer:
+
+	Check filesystem:
+
+		sudo file -s /dev/nvme1n1
+
+	If output shows:
+
+		Linux rev 1.0 ext4 filesystem data
+
+	Mount directly:
+
+		sudo mount /dev/nvme1n1 /restore
+
+	because the filesystem exists directly on the disk rather than inside a partition.
+
+

@@ -1,0 +1,334 @@
+MLflow Tracking
+
+
+MLflow Tracking Example (Experiment Tracking)
+
+MLflow Tracking is used to:
+
+	Track experiments
+	Store parameters
+	Store metrics
+	Save artifacts (models, plots, files)
+	Compare multiple runs
+	Reproduce experiments
+
+
+
+
+
+--------------------------------------------
+
+
+
+1. Start MLflow Server
+
+
+	Using Docker
+	
+	docker run -d \
+	--name mlflow \
+	-p 5000:5000 \
+	-v $(pwd)/mlruns:/mlruns \
+	ghcr.io/mlflow/mlflow:v3.1.0 \
+	mlflow server \
+	--host 0.0.0.0 \
+	--port 5000
+
+
+Access:
+
+	http://localhost:5000
+
+
+2. Install MLflow
+
+
+	pip install mlflow scikit-learn pandas
+
+
+Verify:
+
+	mlflow --version
+
+
+3. Create Tracking Script
+
+vi train.py
+
+
+	import mlflow
+	import mlflow.sklearn
+
+	from sklearn.datasets import load_iris
+	from sklearn.model_selection import train_test_split
+	from sklearn.ensemble import RandomForestClassifier
+	from sklearn.metrics import accuracy_score
+
+
+	# MLflow Tracking Server
+	mlflow.set_tracking_uri("http://localhost:5000")
+
+	# Experiment Name
+	mlflow.set_experiment("iris-classification")
+
+	# Dataset
+	X, y = load_iris(return_X_y=True)
+
+	X_train, X_test, y_train, y_test = train_test_split(
+	    X,
+	    y,
+	    test_size=0.2,
+	    random_state=42
+	)
+
+	# Start Run
+	with mlflow.start_run():
+
+	    # Parameters
+	    n_estimators = 100
+	    max_depth = 5
+
+	    mlflow.log_param("n_estimators", n_estimators)
+	    mlflow.log_param("max_depth", max_depth)
+
+	    # Model
+	    model = RandomForestClassifier(
+	        n_estimators=n_estimators,
+	        max_depth=max_depth
+	    )
+
+	    model.fit(X_train, y_train)
+
+	    predictions = model.predict(X_test)
+
+	    accuracy = accuracy_score(y_test, predictions)
+
+	    # Metrics
+	    mlflow.log_metric("accuracy", accuracy)
+
+	    # Save Model
+	    mlflow.sklearn.log_model(
+	        model,
+	        artifact_path="model"
+	    )
+
+	    print(f"Accuracy: {accuracy}")
+
+
+
+4. Run Training
+
+	python train.py
+
+Output:
+
+	Accuracy: 1.0
+
+
+What Gets Logged?
+
+Type						Example
+
+Parameters						n_estimators=100
+Parameters						max_depth=5
+Metrics							accuracy=1.0
+Artifacts						model files
+Run Info						start/end time
+
+
+
+5. View in MLflow UI
+
+	Open:
+
+		http://localhost:5000
+
+	You will see:
+
+		Experiment
+		 └── iris-classification
+
+		      Run-1
+		      ├── Parameters
+		      ├── Metrics
+		      ├── Artifacts
+		      └── Model
+
+
+6. Log Multiple Runs
+
+Useful for hyperparameter tuning.
+
+for depth in [2, 5, 10]:
+
+    with mlflow.start_run():
+
+        model = RandomForestClassifier(
+            n_estimators=100,
+            max_depth=depth
+        )
+
+        model.fit(X_train, y_train)
+
+        predictions = model.predict(X_test)
+
+        accuracy = accuracy_score(
+            y_test,
+            predictions
+        )
+
+        mlflow.log_param(
+            "max_depth",
+            depth
+        )
+
+        mlflow.log_metric(
+            "accuracy",
+            accuracy
+        )
+
+        print(depth, accuracy)
+
+
+
+
+ MLflow UI:
+
+Run						Max Depth	Accuracy
+
+Run1						2			0.93
+Run2						5			0.96
+Run3						10			0.98
+
+Now you can compare experiments visually.
+
+
+
+7. Log Artifacts
+
+	Create report:
+
+		with open("report.txt", "w") as f:
+		    f.write("Training Completed")
+
+		mlflow.log_artifact("report.txt")
+
+
+		Artifacts tab:
+
+			Artifacts
+			 └── report.txt
+
+
+
+8. Log Images
+
+
+	import matplotlib.pyplot as plt
+
+	plt.plot([1,2,3], [10,20,15])
+	plt.savefig("graph.png")
+
+	mlflow.log_artifact("graph.png")
+
+
+
+
+
+9. Log Dataset Information
+
+
+
+	mlflow.log_param(
+	    "dataset",
+	    "iris"
+	)
+
+	mlflow.log_param(
+	    "train_size",
+	    len(X_train)
+	)
+
+	mlflow.log_param(
+	    "test_size",
+	    len(X_test)
+	)
+
+
+
+---------------------------------------------------------
+
+Real Production Example
+
+
+	with mlflow.start_run():
+
+	    # Model Version
+	    mlflow.log_param(
+	        "model_version",
+	        "v1.2"
+	    )
+
+	    # Git Commit
+	    mlflow.log_param(
+	        "git_commit",
+	        "a12bc34"
+	    )
+
+	    # Environment
+	    mlflow.log_param(
+	        "environment",
+	        "staging"
+	    )
+
+	    # Accuracy
+	    mlflow.log_metric(
+	        "accuracy",
+	        accuracy
+	    )
+
+	    # Latency
+	    mlflow.log_metric(
+	        "latency_ms",
+	        25
+	    )
+
+	    # Save Model
+	    mlflow.sklearn.log_model(
+	        model,
+	        "model"
+	    )
+
+
+
+
+
+
+MLflow Tracking Architecture
+
+
+
+
+
+                    ML Engineer
+                         |
+                         |
+                    Training Job
+                         |
+                         |
+                    mlflow.log_*
+                         |
+                         v
++------------------------------------------------+
+|             MLflow Tracking Server             |
++------------------------------------------------+
+       |              |               |
+       |              |               |
+       v              v               v
+ Parameters       Metrics        Artifacts
+(n_estimators)   (accuracy)     (models/images)
+
+                         |
+                         v
+
+                   MLflow UI

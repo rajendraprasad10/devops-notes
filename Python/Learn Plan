@@ -1,0 +1,460 @@
+Learn Plan 
+
+
+Python Master Roadmap (2026)
+
+Beginner          Intermediate        Advanced         Expert         Master
+   |                    |                |               |               |
+Syntax --> OOP --> Advanced Python --> System Design --> Performance
+                    |                |               |
+                 AsyncIO         Design Patterns   Internals
+                    |                |               |
+               Web APIs         Testing          CPython
+                    |                |               |
+              Automation      Distributed Apps    AI/MLOps
+
+
+Phase 1 — Python Fundamentals (Revision)
+
+Duration: 3-4 days
+
+Topics
+
+	Variables
+	Data Types
+	Operators
+	Input Output
+	Strings
+	Lists
+	Tuples
+	Sets
+	Dictionaries
+	Loops
+	Functions
+	Modules
+	Packages
+
+Know
+
+	time complexity
+	memory usage
+	mutability
+
+Phase 2 — Advanced Data Structures
+
+Master
+
+	list
+	tuple
+	dict
+	set
+	deque
+	heapq
+	queue
+	stack
+	collections
+	Counter
+	defaultdict
+	OrderedDict
+	namedtuple
+	ChainMap
+
+Phase 3 — Functions
+
+Topics
+
+	Arguments
+	*args
+	**kwargs
+	keyword-only args
+
+	closures
+
+	lambda
+
+	higher order functions
+
+	map
+
+	filter
+
+	reduce
+
+	decorators
+
+	partial
+
+	currying
+
+
+
+Phase 4 — Object Oriented Programming
+
+Master
+
+	Class
+
+	Object
+
+	Inheritance
+
+	Composition
+
+	Aggregation
+
+	Abstraction
+
+	Encapsulation
+
+	Polymorphism
+
+	Method Resolution Order
+
+	Multiple inheritance
+
+	Magic methods
+
+	Dataclass
+
+Slots
+
+Descriptors
+
+
+Difference
+
+	__str__
+
+	__repr__
+
+	__new__
+
+	__init__
+
+
+Phase 5 — Exception Handling
+
+	try
+	except
+	finally
+	else
+
+	raise
+
+	custom exception
+
+	Example
+
+	class InvalidAge(Exception):
+	    pass
+
+
+Phase 6 — Iterators & Generators
+
+Know
+
+	iter()
+
+	next()
+
+	yield
+
+	generator expression
+
+	lazy loading
+
+Example
+
+	def count():
+
+	    n=1
+
+	    while True:
+	        yield n
+	        n+=1
+
+Phase 7 — Comprehensions
+
+	List
+
+	Dictionary
+
+	Set
+
+	Generator
+
+Example
+
+{x:x*x for x in range(5)}
+
+
+Phase 9 — Advanced Python
+
+Must Master
+
+	Decorators
+
+	Context Managers
+
+	Metaclasses
+
+	Descriptors
+
+	Monkey Patching
+
+	Reflection
+
+	Dynamic Imports
+
+	__dict__
+
+	__slots__
+
+	__name__
+
+	__main__
+
+	globals()
+
+	locals()
+
+	eval()
+
+	exec()
+
+Phase 10 — Memory Management
+
+Know internally
+
+	Stack
+
+	Heap
+
+	Reference Counting
+
+	Garbage Collection
+
+	Cyclic GC
+
+	Weak references
+
+	id()
+
+	is
+
+	==
+
+Interview
+
+	Why does Python use reference counting?
+
+	How GC works?
+
+
+
+Phase 11 — Multithreading
+
+Master
+
+	Thread
+
+	Lock
+
+	Semaphore
+
+	Condition
+
+	Event
+
+	Barrier
+
+	Queue
+
+	ThreadPoolExecutor
+
+Interview
+
+Race condition
+
+	Deadlock
+
+
+Phase 13 — Async Programming
+
+Very Important
+
+	async
+
+	await
+
+	asyncio
+
+	aiohttp
+
+	Task
+
+	Future
+
+	Event Loop
+
+	Coroutine
+
+	gather
+
+	wait
+
+	timeout
+
+
+Phase 14 — Networking
+
+
+	socket
+
+	http
+
+	requests
+
+	urllib
+
+	httpx
+
+	websocket
+
+
+Phase 16 — Testing
+
+	unittest
+
+	pytest
+
+	mock
+
+	fixture
+
+	parameterized tests
+
+
+Phase 18 — Design Patterns
+
+Know in Python
+
+	Singleton
+
+	Factory
+
+	Builder
+
+	Strategy
+
+	Observer
+
+	Adapter
+
+	Facade
+
+	Decorator
+
+	Command
+
+	State
+
+	Chain of Responsibility
+
+
+Phase 19 — Performance Optimization
+
+Learn
+
+	timeit
+
+	cProfile
+
+	memory_profiler
+
+	line_profiler
+
+	functools.cache
+
+	lru_cache
+
+NumPy optimization
+
+
+
+Phase 20 — CPython Internals
+
+Understand
+
+	Bytecode
+
+	.pyc files
+
+	Virtual Machine
+
+	GIL
+
+	Reference Counting
+
+	Garbage Collector
+
+	Frame Objects
+
+	Namespaces
+
+	Symbol Tables
+
+
+
+Phase 23 — Web Development
+
+Master
+
+FastAPI
+Django
+Flask
+SQLAlchemy
+Async SQLAlchemy
+Pydantic
+REST APIs
+Authentication (JWT, OAuth2)
+WebSockets
+Background tasks (Celery, RQ)
+
+
+Phase 25 — MLOps Integration
+
+Learn Python with:
+
+	NumPy
+	Pandas
+	Scikit-learn
+	MLflow
+	MinIO
+	DVC
+	Airflow
+	Kubeflow
+	FastAPI model serving
+	Hugging Face Transformers
+	LangChain basics
+
+
+Phase 26 — Capstone Projects
+
+Build projects that combine multiple concepts:
+
+Enterprise CI/CD Automation Tool (Python + Jenkins + Docker + Kubernetes)
+
+Distributed Log Analyzer (asyncio + multiprocessing)
+
+AWS Resource Manager (Boto3 + CLI)
+
+FastAPI Authentication Service (JWT + PostgreSQL + Redis)
+
+ML Model Deployment Platform (FastAPI + MLflow + MinIO + Docker + Kubernetes)
+
+Python-based Configuration Management Tool (Ansible-like functionality)
+
+Kubernetes Health Monitoring Dashboard (Python + Prometheus API + Grafana)
+
+End-to-End DevOps/MLOps Platform integrating CI/CD, model training, deployment, and monitoring.

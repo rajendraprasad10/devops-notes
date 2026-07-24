@@ -1,0 +1,439 @@
+Disk, memory, CPU, performance tools
+
+
+Networking, SSH, DNS, ports
+
+============================================================
+
+Scenario 1: Disk is 100% Full
+
+Problem:
+
+Your application suddenly stops writing logs.
+No space left on device
+
+============================================================
+
+Step 1:
+Check disk usage
+
+df -h
+
+Output
+
+Filesystem      Size Used Avail Use% Mounted on
+/dev/sda1        50G 50G     0 100% /
+
+Root filesystem is full.
+
+------------------------------------------------------
+
+Step 2
+
+Find which directory is consuming space.
+
+du -sh /*
+
+or
+
+du -sh /var/*
+
+Output
+
+40G /var/log
+
+========================================================
+
+Step 3
+
+Find large files.
+
+find /var/log -type f -size +500M
+
+Output
+
+/var/log/app.log
+
+
+=======================================================
+
+Step 4
+
+Rotate or remove logs.
+
+truncate -s 0 /var/log/app.log
+
+or
+
+rm old.log
+
+
+Why use truncate instead of rm?
+
+Answer:
+
+Because deleting an open log file doesn't immediately free disk space if a process still has it open. truncate clears the contents while keeping the file descriptor valid.
+
+============================================================================
+
+Scenario 2: Disk Usage Increases Every Hour
+
+Symptoms
+
+Today : 60%
+
+After 1 hour : 70%
+
+After 2 hours : 80%
+
+Questions
+
+Is log rotation configured?
+Is Docker storing old images?
+Is Kubernetes storing container logs?
+
+Commands
+
+docker system df
+docker image prune
+journalctl --disk-usage
+
+======================================================================
+
+Scenario 3: Deleted File but Space Not Released
+
+
+Very common interview question.
+
+   rm app.log
+
+Disk still 100%
+
+Why?
+
+Because a running process still holds the file descriptor.
+
+Find it
+
+   lsof | grep deleted
+
+Restart process
+
+   systemctl restart app
+
+
+====================================================================================
+
+
+Scenario 4: High Memory Usage
+
+Application becomes slow.
+
+Check
+
+   free -h
+
+Output
+
+   Mem: 16G
+
+   Used:15G
+
+   Free:100M
+
+Next
+
+   top
+
+Sort by memory
+
+   Shift + M
+
+or
+
+   ps aux --sort=-%mem | head
+
+Output
+
+   PID  COMMAND
+
+   2500 java
+
+   3300 python
+
+   1000 postgres
+
+Question
+
+   How do you know whether it's a memory leak?
+
+Answer
+
+   Observe memory continuously.
+
+watch free -h
+
+   If memory keeps increasing without dropping after garbage collection or request completion, it may indicate a memory leak.
+
+=================================================================================
+
+Scenario 6: Swap Usage is High
+
+Check
+
+   free -h
+
+Output
+
+   RAM Used
+
+   95%
+
+   Swap
+
+   90%
+
+Questions
+
+   Why is swap bad?
+
+Answer
+
+   Swap uses disk instead of RAM.
+
+   Disk is much slower.
+
+   Applications become slow.
+
+====================================================================================
+
+Scenario 7: CPU 100%
+
+Users complain application is slow.
+
+Check
+
+   top
+
+Output
+
+   CPU
+
+   99%
+
+Find process
+
+   ps aux --sort=-%cpu
+
+Output
+
+   python
+
+   300%
+
+Question
+
+   Why 300%?
+
+Answer
+
+   Application uses multiple CPU cores.
+
+
+=============================================================
+
+Scenario 8: CPU Idle but Application is Slow
+
+   CPU
+
+   15%
+
+Users
+
+   Very Slow
+
+Why?
+
+Possible reasons
+
+   Waiting for disk
+   Database latency
+   Network latency
+   Thread locks
+   External API delays
+
+Check
+
+   iostat
+
+or
+
+   vmstat
+
+===============================================
+
+Scenario 11: Which Process Reads the Most Disk?
+
+Use
+
+   iotop
+
+Output
+
+   postgres
+
+   120MB/s
+
+===================================================================
+Scenario 12: High Context Switching
+
+Check
+
+   vmstat 1
+
+Look
+
+   cs
+
+   High
+
+   500000
+
+Meaning
+
+   CPU spends more time switching between processes than executing work.
+
+============================================================================
+
+Scenario 13: High Interrupts
+
+vmstat
+
+Look
+
+   in
+
+Very high.
+
+Possible causes
+
+   Network card
+   Storage
+   Driver issues
+
+
+=========================================================================
+
+Scenario 14: Run Queue is Large
+
+   vmstat
+
+Look
+
+   r
+
+Output
+
+   r=18
+
+CPU
+
+   4 cores.
+
+Meaning
+
+   18 processes are waiting for CPU.
+
+=============================================================================
+
+
+Scenario 15: Cache Uses All Memory
+
+   free -h
+
+Used
+
+   15GB
+
+User thinks RAM is full.
+
+Actually
+
+   buff/cache
+
+   12GB
+
+Question
+
+   Should we clear cache?
+
+Answer
+
+   No.
+
+   Linux automatically reclaims cache when applications need memory.
+
+   ===============================================================
+
+
+Scenario 17: Zombie Processes
+
+Check
+
+   ps -el | grep Z
+
+Question
+
+   Can zombies consume CPU?
+
+Answer
+
+No.
+
+   They occupy only process table entries until the parent process reaps them.
+
+==========================================================================
+
+
+Scenario 20: Kubernetes Node Slow
+
+Check
+
+   top
+
+   free -h
+
+   df -h
+
+journalctl -u kubelet
+
+systemctl status containerd
+
+crictl ps
+
+Possible causes
+
+   Disk full
+   Memory pressure
+   Image garbage collection
+   Container runtime failure
+
+-=================================================================
+
+Performance Monitoring Tools Cheat Sheet
+Tool           Purpose  Key Metrics
+top            Live CPU, memory, processes   CPU%, MEM%, load
+htop           Interactive process viewer CPU, memory, process tree
+free -h           Memory overview   Used, free, cache, swap
+vmstat 1       CPU, memory, swap, context switches r, b, si, so, cs, wa
+iostat -xz 1         Disk I/O performance %util, await, svctm
+iotop          Per-process disk I/O Read/write throughput
+sar            Historical performance  CPU, memory, network, disk
+mpstat -P ALL 1   Per-core CPU usage   %usr, %sys, %iowait
+pidstat 1         Per-process CPU, memory, I/O  CPU%, MEM%, I/O
+lsof              Open files and sockets  File descriptors, deleted files
+ss -tulnp         Network sockets   Listening ports, active connections
+dmesg Kernel      messages   OOM events, hardware errors
+journalctl        Systemd logs   Service failures, boot logs
+df -h          Filesystem usage  Used%, available space
+du -sh         Directory size analysis Space consumed by directories

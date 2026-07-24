@@ -1,0 +1,473 @@
+Basics 
+
+
+
+Week 1 – Strong Foundation
+
+Learn:
+
+	Architecture
+	Inventory
+	Ad-hoc commands
+	YAML
+	Modules
+	Variables
+	Facts
+	Conditionals
+	Practice
+
+Create inventory
+
+	[web]
+	web1
+	web2
+
+	[db]
+	db1
+
+Run
+
+	ansible all -m ping
+	ansible web -m shell -a "hostname"
+	ansible db -m command -a "uptime"
+
+
+Modules to Master
+
+	ping
+	command
+	shell
+	copy
+	template
+	file
+	service
+	package
+	yum
+	apt
+	user
+	group
+	debug
+	setup
+
+
+--------------------------------------------------------------------------------
+
+
+Week 2 – Playbooks
+
+Master
+
+	Playbooks
+	Variables
+	Register
+	Loops
+	When
+	Blocks
+	Rescue
+	Until
+	Retry
+	Build
+
+Deploy Apache automatically
+
+Practice
+
+	install
+	configure
+	restart
+	verify
+
+
+-----------------------------------------------------------------------------
+
+Week 3 – Inventory & Variables
+
+Master
+
+	inventory/
+	    dev/
+	    qa/
+	    prod/
+
+	group_vars/
+	host_vars/
+
+Practice
+
+	variable precedence
+	include_vars
+	set_fact
+	hostvars
+	group_names
+
+Scenario
+
+Different config for
+
+	Dev
+	QA
+	Prod
+
+--------------------------------------------------------------------------------
+
+
+Week 4 – Roles
+
+	This is where real Ansible starts.
+
+Master
+
+	roles/
+
+	web/
+	tasks/
+
+	handlers/
+
+	templates/
+
+	defaults/
+
+	vars/
+
+	meta/
+
+	files/
+
+Build
+
+	common
+	nginx
+	tomcat
+	docker
+	java
+	users
+	security
+
+Learn
+
+	dependencies
+	defaults
+	vars
+	handlers
+
+
+----------------------------------------------------------------------------------
+
+
+Week 5 – Templates & Configuration
+
+Master:
+
+	Jinja2
+
+Practice:
+
+	template
+
+	lineinfile
+
+	replace
+
+	blockinfile
+
+	copy
+
+	assemble
+
+Project
+
+Generate
+
+	nginx.conf
+
+	application.properties
+
+	docker-compose.yml
+
+for
+
+	dev
+	qa
+	prod
+
+
+-----------------------------------------------------------------------------------
+
+Week 6 – Vault & Security
+
+Master
+
+	Vault
+	Vault IDs
+
+Practice
+
+	encrypt
+
+	decrypt
+
+	edit
+
+	view
+
+	rekey
+
+Integrate
+
+	Jenkins credentials
+	SSH keys
+	AWS Secrets Manager (concept)
+	HashiCorp Vault (concept)
+
+
+
+
+---------------------------------------------------------------------------------
+
+
+
+Week 7 – Enterprise Features
+
+Master
+
+Execution Control
+
+	serial
+
+	run_once
+
+	delegate_to
+
+	async
+
+	poll
+
+	throttle
+
+Handlers
+
+	Tags
+
+	Blocks
+
+	Retries
+
+	Failure Handling
+
+Practice every scenario you've been collecting, such as:
+
+	Rolling deployment
+	Blue-green deployment
+	Retry failed task
+	Continue on partial failure
+	Restart only on config change
+
+----------------------------------------------------------------------------------
+
+Week 8 – CI/CD & Production
+
+Master
+
+	Jenkins
+	Docker
+	GitHub Actions
+	GitLab CI
+	Dynamic Inventory
+	AWS EC2 Inventory
+	Ansible Galaxy
+	Molecule
+	ansible-lint
+
+
+----------------------------------------
+
+Capstone Projects
+
+Project 1
+	
+	LAMP Stack Deployment
+	
+	Apache
+
+	MySQL
+
+	PHP
+
+	Firewall
+
+	Users
+
+
+Project 2
+
+Kubernetes Worker Setup
+
+	Install
+
+	Docker
+	kubeadm
+	kubelet
+	kubectl
+
+	Automatically.
+
+
+Project 3
+
+	Java Application Deployment
+
+	Deploy
+
+	Java
+
+	Tomcat
+
+	WAR
+
+	Nginx
+
+	SSL
+
+
+Project 4
+
+	Jenkins + Ansible
+
+	Pipeline
+
+	Git Pull
+
+	Build
+
+	Test
+
+	Docker Build
+
+	Push Image
+
+	Deploy	Jenkins + Ansible
+
+	Pipeline
+
+	Git Pull
+
+	Build
+
+	Test
+
+	Docker Build
+
+	Push Image
+
+	Deploy
+
+	Verify
+
+	Rollback
+
+	Verify
+
+	Rollback
+
+
+
+Project 5
+
+	Enterprise Linux Hardening
+
+	Automate
+
+		SSH
+		Firewall
+		Users
+		Password policy
+		Packages
+		Time sync
+		Monitoring agent
+
+
+
+
+
+Advanced Topics
+
+After mastering the basics, learn:
+
+	Dynamic Inventory (AWS, Azure, GCP)
+
+	Custom Modules (Python)
+	
+	Callback Plugins
+	
+	Lookup Plugins
+	
+	Filter Plugins
+	
+	Collections
+	
+	Ansible Galaxy
+	
+	Execution Environments
+	
+	AWX / Ansible Automation Platform
+	
+	Strategy Plugins (linear, free)
+	
+	Connection Plugins
+	
+	Performance tuning (forks, SSH pipelining)
+
+
+Commands You Should Know by Heart
+
+
+
+	ansible all -m ping
+
+	ansible-playbook site.yml
+
+	ansible-playbook site.yml --check
+
+	ansible-playbook site.yml --diff
+
+	ansible-playbook site.yml --syntax-check
+
+	ansible-playbook site.yml --limit web
+
+	ansible-playbook site.yml --tags db
+
+	ansible-playbook site.yml --skip-tags db
+
+	ansible-playbook site.yml --step
+
+	ansible-playbook site.yml --start-at-task "Install"
+
+	ansible-playbook site.yml -vvv
+
+	ansible-vault encrypt secrets.yml
+
+	ansible-vault edit secrets.yml
+
+	ansible-vault rekey secrets.yml
+
+	ansible-galaxy init nginx
+
+	ansible-lint
+
+	molecule test
+
+
+Final Milestone
+
+By the end of this plan, aim to have a GitHub repository containing:
+
+	20–30 reusable roles
+	100+ playbooks
+	50+ interview scenarios with solutions
+	5 production-style automation projects
+	Jenkins pipeline integrating Ansible deployments
+	Documentation for each project
+
+
+

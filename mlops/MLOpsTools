@@ -1,0 +1,169 @@
+MLOpsTools
+
+
+1. Source Code Management
+
+	Git 
+	GitHub 
+	GitLab
+	Bitbucket 
+
+2. Experiment Tracking
+
+	MLOps 
+	Weights & Biases
+	Neptune.ai
+	Comet
+
+3. Data Versioning
+
+	DVC 
+	LakeFS
+	Pachyderm
+
+4. Workflow Orchestration
+
+	Apache Airflow
+	KubeFlow 
+	Argo Workflows
+	Prefect 
+	Dagster
+
+5. Model Serving
+
+	KServe
+	Seldon Core
+	BentoML
+	TorchServe
+	TensorFlow Serving
+
+6. Containers
+	
+	Docker 
+	Padman 
+
+7. Container Orchestration
+
+	Kubernetes 
+	Helm 
+	OpenShift
+
+8. CI/CD 
+
+	Jenkins 
+	GitHub Actions 
+	GitLab CICD
+	Argo CD
+
+
+9. ArtiFacts Starage 
+
+	MinIO
+	Amazon s3
+	Azure Blob Storage
+
+
+10. Model Monitoring 
+	
+	Evidently AI
+	Arize AI
+
+11. Infrastructure Monitoring
+
+	Prometheus
+	Grafana 
+	OpenTelemetry
+
+12. Logging
+
+	Elasticsearch
+	Logstash
+	Kibana
+
+13. Infrastructure as Code
+	
+	Terraform 
+	Ansible 
+
+14. Security 
+
+	HashiCorp Vault
+	Trivy 
+	Snyk
+
+15. Cloud MLOps Platforms
+
+	Aws
+	Azure
+
+16. LLMOps
+
+	LangChain
+	LlamaIndex
+	LangGraph
+	vLLM
+	Ollama
+
+
+Modern Enterprise MLOps Architecture
+
+			Git
+			   ↓
+			CI/CD (Jenkins/GitHub Actions)
+			   ↓
+			MLflow
+			   ↓
+			DVC
+			   ↓
+			MinIO / S3
+			   ↓
+			Docker
+			   ↓
+			Kubernetes
+			   ↓
+			KServe / BentoML
+			   ↓
+			Prometheus
+			   ↓
+			Grafana
+			   ↓
+			Evidently AI
+
+
+
+Phase 1 (Core MLOps)
+
+		MLflow
+		DVC
+		MinIO
+		Model Registry
+		Model Serving
+
+
+Phase 2 (Production MLOps)
+
+		KServe
+		Kubeflow
+		Argo Workflows
+		Argo CD
+		Feature Stores (Feast)
+
+
+Phase 3 (LLMOps)
+
+	LangChain
+	LangGraph
+	LlamaIndex
+	vLLM
+
+AI Observability (Evidently AI, Arize AI)
+
+
+
+
+
+
+
+
+
+

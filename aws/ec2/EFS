@@ -40,7 +40,7 @@ What is EFS?
 
 
 	Key Features of EFS
-		Feature									Description
+		Feature											Description
 		
 		Fully Managed		AWS handles servers, storage, scaling, and maintenance
 
@@ -347,9 +347,6 @@ Step 10: Test Auto Scaling
 		cat /shared/test.txt
 
 	You will see the same file.
-
-
-
 
 
 Types of EFS Backups

@@ -1,0 +1,40 @@
+Topics
+
+
+Topics to Practice
+
+Workflow syntax (name, on, jobs, steps)
+
+Events (push, pull_request, workflow_dispatch, schedule)
+
+Runners (ubuntu, windows, macOS, self-hosted)
+
+Actions (actions/checkout, setup-python, cache)
+
+Environment variables
+
+Secrets (${{ secrets.DOCKER_PASSWORD }})
+
+Job dependencies (needs)
+
+Matrix builds
+
+Conditional execution (if)
+
+Artifacts (upload/download)
+
+Caching
+
+Reusable workflows
+
+Composite actions
+
+Service containers (PostgreSQL, Redis)
+
+Docker builds
+
+Security scanning (Trivy)
+
+Notifications (Slack, Teams)
+
+Deployments to AWS, Azure, Kubernetes

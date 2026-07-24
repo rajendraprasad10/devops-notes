@@ -44,19 +44,19 @@ It helps with:
 
 Why MLflow?
 
-Machine learning projects generate:
+	Machine learning projects generate:
 
-Multiple experiments
+	Multiple experiments
 
-Different models
+	Different models
 
-Many datasets
+	Many datasets
 
-Training metrics
+	Training metrics
 
-Artifacts
+	Artifacts
 
-MLflow helps organize and manage all these efficiently.
+	MLflow helps organize and manage all these efficiently.
 
 
 ---------------------------------------------------------------------------------
@@ -64,17 +64,17 @@ MLflow helps organize and manage all these efficiently.
 MLflow Lifecycle
 
 
-Train Model
-    ↓
-Track Experiment
-    ↓
-Store Artifacts
-    ↓
-Register Model
-    ↓
-Deploy Model
-    ↓
-Monitor
+	Train Model
+	    ↓
+	Track Experiment
+	    ↓
+	Store Artifacts
+	    ↓
+	Register Model
+	    ↓
+	Deploy Model
+	    ↓
+	Monitor
 
 
 -----------------------------------------------------------------------------------

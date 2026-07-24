@@ -1,0 +1,479 @@
+Why 
+
+Since you're a DevOps Engineer and already work with Docker, Kubernetes, Jenkins, AWS, and CI/CD, you should learn Helm from the perspective of building, packaging, deploying, and maintaining production Kubernetes applications.
+
+
+
+Helm Learning Roadmap (Beginner → Expert)
+
+
+Phase 1: Understand Why Helm Exists
+
+Without Helm:
+
+	kubectl apply -f deployment.yaml
+	kubectl apply -f service.yaml
+	kubectl apply -f ingress.yaml
+	kubectl apply -f configmap.yaml
+	kubectl apply -f secret.yaml
+
+	Imagine 50 YAML files.
+
+Helm solves this by packaging Kubernetes manifests.
+
+Think:
+
+	APT  -> Linux packages
+	NPM  -> Node packages
+	PIP  -> Python packages
+	Helm -> Kubernetes packages
+
+
+
+Phase 2: Install Helm
+
+	helm version 
+
+	Add repository
+
+		helm repo add bitnami https://charts.bitnami.com/bitnami
+
+		helm repo list 
+
+		helm repo update # updates the current repos data 
+
+	# search the charts display the details of chart 
+
+	helm search repo nginx
+
+
+
+
+Phase 3: First Helm Deployment
+
+	Install nginx
+
+		helm install my-nginx bitnami/nginx
+
+	Check it 
+
+		helm list
+
+	check all in default namespace 
+
+		kubectl get all
+
+	Uninstall above charts 
+
+		helm uninstall my-nginx
+
+
+
+
+Phase 4: Helm Architecture
+
+	Helm
+	│
+	├── Chart
+	├── Release
+	├── Repository
+	└── Values
+
+
+	Chart:
+
+		Package of Kubernetes manifests.
+
+		Example:
+
+			nginx-chart/
+
+
+	Release:
+
+		Installed chart.
+
+		Example:
+
+			helm install my-nginx nginx-chart
+
+			release name: 
+				my-nginx
+
+	Repository:
+
+		Chart storage.
+
+		Example:
+
+			Bitnami
+			ArtifactHub
+			Internal Repo
+
+	Values:
+
+		Configuration file.
+
+		Example:
+
+			replicaCount: 3
+			image:
+			  tag: latest
+
+
+Phase 5: Create Your First Chart
+
+	helm create myapp
+
+
+	Generated structure:
+
+		myapp
+		│
+		├── Chart.yaml
+		├── values.yaml
+		├── charts/
+		├── templates/
+		└── templates/tests/
+
+
+Phase 6: Important Files
+
+	Chart.yaml
+
+		Metadata
+
+		apiVersion: v2
+		name: myapp
+		version: 1.0.0
+
+
+
+	values.yaml
+
+		User configuration
+
+			replicaCount: 2
+
+			image:
+			  repository: nginx
+			  tag: latest
+
+
+	templates/
+
+		Contains manifests
+
+			deployment.yaml
+			service.yaml
+			ingress.yaml
+
+Phase 7: Helm Template Syntax
+
+	Variable
+
+		{{ .Values.replicaCount }}
+
+		Example
+
+			replicas: {{ .Values.replicaCount }}
+
+	values.yaml
+
+		replicaCount: 5
+
+		Output
+
+			replicas: 5
+
+
+Phase 8: Deploy Custom Chart
+
+	Render templates
+
+		helm template myapp .
+
+
+	Install
+
+		helm install myapp .
+
+	Upgrade
+
+		helm upgrade myapp .
+
+	Delete
+
+		helm uninstall myapp
+
+
+Phase 9: Values Override
+
+	Default
+
+		replicaCount: 1
+
+
+	Override
+
+		helm install myapp . --set replicaCount=5
+
+	or 
+
+		helm install myapp . -f prod-values.yaml
+
+
+Phase 10: Environment-Based Deployments
+
+	Development
+
+		helm install myapp . -f values-dev.yaml
+
+	Production
+
+		helm install myapp . -f values-prod.yaml
+
+	Structure
+
+		values-dev.yaml
+		values-qa.yaml
+		values-stage.yaml
+		values-prod.yaml
+
+Phase 11: Helm Upgrade
+
+	Upgrade image
+
+		helm upgrade myapp . --set image.tag=v2
+
+
+	History
+
+		helm history myapp
+
+
+Phase 12: Rollback
+
+	View revisions
+
+		helm history myapp
+
+
+	Rollback
+
+		helm rollback myapp 1
+
+	Very important interview topic.
+
+
+Phase 13: Helm Hooks
+
+	Run jobs before deployment.
+
+	Example:
+
+		annotations:
+		  "helm.sh/hook": pre-install
+
+
+	Hooks:
+
+		pre-install
+		post-install
+
+		pre-upgrade
+		post-upgrade
+
+		pre-delete
+		post-delete
+
+		Used for:
+
+			DB migrations
+			Backup jobs
+			Health checks
+
+
+
+Phase 14: ConfigMaps
+
+
+	values.yaml
+
+		env:
+		  APP_MODE: production
+
+	configmap.yaml
+
+		data:
+		  APP_MODE: {{ .Values.env.APP_MODE }}
+
+
+Phase 15: Secrets
+
+	values.yaml
+
+		secret:
+		  password: mypass
+
+	secret.yaml
+
+		data:
+		  password: {{ .Values.secret.password | b64enc }}
+
+
+
+Phase 16: Conditional Deployments
+
+	Deploy ingress only if enabled.
+
+	values.yaml
+
+		ingress:
+		  enabled: true
+
+	Template
+
+		{{ if .Values.ingress.enabled }}
+		...
+		{{ end }}
+
+
+
+Phase 17: Loops
+
+	values.yaml
+
+	ports:
+	  - 80
+	  - 443
+
+	Template
+
+		{{ range .Values.ports }}
+		- containerPort: {{ . }}
+		{{ end }}
+
+Phase 18: Helpers
+
+	templates/_helpers.tpl
+
+		{{ define "app.name" }}
+		myapp
+		{{ end }}
+
+	Use
+
+		{{ include "app.name" . }}
+
+
+Phase 19: Dependencies
+
+	Install Redis with app.
+
+	Chart.yaml
+
+	dependencies:
+	  - name: redis
+	    version: 18.x.x
+	    repository: https://charts.bitnami.com/bitnami
+
+	Download
+
+		helm dependency update
+
+
+Phase 20: Package Chart
+
+	Package
+
+		helm package .
+
+	Output
+
+		myapp-1.0.0.tgz
+
+
+Phase 21: Linting
+
+	Validate chart
+
+		helm lint .
+
+	Interview favorite command.
+
+
+
+Phase 22: Dry Run
+
+
+	helm install myapp . --dry-run
+
+	Render only
+
+		helm template .
+
+
+
+Phase 23: Debugging
+
+
+		helm install myapp . \
+		--debug
+
+
+	View values
+
+		helm get values myapp
+
+	View manifests
+
+		helm get manifest myapp
+
+
+
+Phase 24: Production Best Practices
+
+
+	Use Separate Values
+
+
+		values-dev.yaml
+		values-qa.yaml
+		values-stage.yaml
+		values-prod.yaml
+		Never Store Secrets
+
+	Use:
+
+		HashiCorp Vault
+		Sealed Secrets
+		External Secrets Operator
+		CI/CD
+
+	Jenkins Pipeline
+
+		stage('Deploy') {
+		    sh '''
+		    helm upgrade --install myapp . \
+		    -f values-prod.yaml
+		    '''
+		}
+
+
+
+
+Phase 25: Expert Topics
+
+	Learn these deeply:
+
+		Helm Template Functions
+		Sprig Functions
+		Named Templates
+		Subcharts
+		Library Charts
+		OCI Registries
+		Chart Versioning
+		Helm Hooks
+		Helm Testing
+		GitOps Integration

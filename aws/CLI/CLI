@@ -1,0 +1,450 @@
+CLI
+
+
+AWS CLI Practical Guide & Notes (DevOps/Cloud Engineer)
+
+AWS CLI is one of the most important tools for DevOps Engineers because it allows you to automate AWS operations from Linux, Windows, Jenkins, GitLab CI, GitHub Actions, Ansible, and Shell Scripts.
+
+
+
+1. Install AWS CLI
+
+Linux
+	curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+
+	unzip awscliv2.zip
+
+	sudo ./aws/install
+
+	aws --version
+
+Output:
+
+	aws-cli/2.x.x
+
+
+
+2. Configure AWS CLI
+
+
+	aws configure
+
+	Enter:
+
+		AWS Access Key ID
+		AWS Secret Access Key
+		Region
+		
+		Output Format
+
+			Example:
+
+			Access Key: AKIA*******
+			Secret Key: *********
+			Region: ap-south-1
+			Output: json
+
+
+3. Verify Credentials
+
+	aws sts get-caller-identity
+
+Output:
+
+	{
+	  "UserId": "ABC123",
+	  "Account": "123456789012",
+	  "Arn": "arn:aws:iam::123456789012:user/admin"
+	}
+
+
+4. AWS CLI Profiles
+
+		Create multiple accounts.
+
+	aws configure --profile dev
+
+	aws configure --profile prod
+
+Use profile:
+
+	aws s3 ls --profile prod
+
+	List profiles:
+
+		cat ~/.aws/config
+		cat ~/.aws/credentials
+
+
+5. Common Output Formats
+
+	JSON
+
+		aws ec2 describe-instances
+
+	Table
+
+		aws ec2 describe-instances --output table
+
+	Text
+
+		aws ec2 describe-instances --output text
+
+
+
+
+7. S3 Practical Commands
+	
+
+	List Buckets
+
+		aws s3 ls
+
+	Create Bucket
+
+		aws s3 mb s3://my-devops-bucket
+	
+	Delete Bucket
+		
+		aws s3 rb s3://my-devops-bucket
+
+	Upload File
+	
+		aws s3 cp backup.zip s3://mybucket/
+
+	Download File
+	
+		aws s3 cp s3://mybucket/backup.zip .
+
+	Sync Folder
+
+	Upload
+
+		aws s3 sync ./data s3://mybucket/data
+
+	Download
+
+		aws s3 sync s3://mybucket/data ./data
+
+	Delete Object
+
+		aws s3 rm s3://mybucket/test.txt
+
+
+
+
+8. EC2 Practical Commands
+
+	List Instances
+
+		aws ec2 describe-instances
+
+	Launch Instance
+	
+		aws ec2 run-instances \
+			--image-id ami-123456 \
+			--instance-type t2.micro \
+			--key-name mykey
+
+	Start Instance
+	
+		aws ec2 start-instances \
+			--instance-ids i-123456
+
+	Stop Instance
+
+		aws ec2 stop-instances \
+			--instance-ids i-123456
+
+	Reboot
+
+		aws ec2 reboot-instances \
+
+			--instance-ids i-123456
+	
+	Terminate
+
+		aws ec2 terminate-instances \
+			--instance-ids i-123456
+
+
+9. Security Groups
+
+	List SGs
+
+		aws ec2 describe-security-groups
+
+	Create SG
+
+		aws ec2 create-security-group \
+		--group-name web-sg \
+		--description "Web Access"
+
+	Open Port 22
+
+		aws ec2 authorize-security-group-ingress \
+		--group-id sg-12345 \
+		--protocol tcp \
+		--port 22 \
+		--cidr 0.0.0.0/0
+
+	Open Port 80
+
+		aws ec2 authorize-security-group-ingress \
+		--group-id sg-12345 \
+		--protocol tcp \
+		--port 80 \
+		--cidr 0.0.0.0/0
+
+
+10. EBS Practical
+
+	Create Volume
+
+		aws ec2 create-volume \
+		--size 20 \
+		--availability-zone ap-south-1a
+
+	Attach Volume
+
+		aws ec2 attach-volume \
+		--volume-id vol-123 \
+		--instance-id i-123 \
+		--device /dev/xvdf
+
+	List Volumes
+
+		aws ec2 describe-volumes
+
+
+11. Snapshot Commands
+
+	Create Snapshot
+
+		aws ec2 create-snapshot \
+		--volume-id vol-123 \
+		--description "Daily Backup"
+
+	List Snapshots
+
+		aws ec2 describe-snapshots \
+		--owner-ids self
+
+	Delete Snapshot
+
+		aws ec2 delete-snapshot \
+		--snapshot-id snap-123
+
+12. IAM Commands
+
+	List Users
+
+		aws iam list-users
+
+	Create User
+
+		aws iam create-user \
+		--user-name devops
+
+	Create Access Key
+
+		aws iam create-access-key \
+		--user-name devops
+
+	Attach Policy
+
+		aws iam attach-user-policy \
+		--user-name devops \
+		--policy-arn arn:aws:iam::aws:policy/AdministratorAccess
+
+
+14. Load Balancer Commands
+
+	List ALB
+
+		aws elbv2 describe-load-balancers
+
+	List Target Groups
+
+		aws elbv2 describe-target-groups
+
+	List Targets
+
+		aws elbv2 describe-target-health \
+		--target-group-arn arn
+
+
+15. Route53 Commands
+
+	List Hosted Zones
+
+		aws route53 list-hosted-zones
+
+	List Records
+
+		aws route53 list-resource-record-sets \
+		--hosted-zone-id Z12345
+
+
+16. RDS Commands
+
+	List Databases
+
+		aws rds describe-db-instances
+
+	Start RDS
+
+		aws rds start-db-instance \
+		--db-instance-identifier mydb
+
+	Stop RDS
+
+		aws rds stop-db-instance \
+		--db-instance-identifier mydb
+
+
+17. CloudWatch Commands
+
+	List Metrics
+
+		aws cloudwatch list-metrics
+
+	Get CPU Usage
+
+		aws cloudwatch get-metric-statistics \
+		--namespace AWS/EC2 \
+		--metric-name CPUUtilization
+
+
+18. Lambda Commands
+
+	List Functions
+
+		aws lambda list-functions
+
+	Invoke Function
+
+		aws lambda invoke \
+		--function-name myfunction \
+		output.json
+
+
+
+
+19. ECR Commands
+
+	Login
+
+		aws ecr get-login-password \
+		| docker login \
+		--username AWS \
+		--password-stdin ACCOUNT_ID.dkr.ecr.ap-south-1.amazonaws.com
+
+	Create Repository
+
+		aws ecr create-repository \
+		--repository-name myapp
+
+	Push Image
+
+		docker push ACCOUNT_ID.dkr.ecr.ap-south-1.amazonaws.com/myapp:v1
+	
+
+20. ECS Commands
+
+	List Clusters
+
+		aws ecs list-clusters
+
+	List Services
+
+		aws ecs list-services \
+		--cluster mycluster
+
+
+
+
+21. Useful DevOps Commands
+
+	Get Current Region
+
+		aws configure get region
+
+	Get Account ID
+
+		aws sts get-caller-identity \
+		--query Account \
+		--output text
+
+	List All Regions
+
+		aws ec2 describe-regions \
+		--query "Regions[*].RegionName"
+
+
+
+AWS CLI Interview Questions
+
+
+Q1. Difference between AWS CLI and SDK?
+
+	CLI → Command Line
+	SDK → Programming Language API
+
+
+Q2. Where are credentials stored?
+
+Linux:
+
+	~/.aws/credentials
+	~/.aws/config
+
+
+
+Q3. How do you assume an IAM Role?
+
+
+	aws sts assume-role \
+	--role-arn arn:aws:iam::123456789012:role/AdminRole \
+	--role-session-name DevOpsSession
+
+
+Q4. How do you debug AWS CLI commands?
+
+
+	aws s3 ls --debug
+
+
+Q5. How do you use CLI in Jenkins?
+
+
+	stage('Deploy') {
+	    steps {
+	        sh 'aws s3 sync build/ s3://prod-bucket'
+	    }
+	}
+
+
+
+AWS CLI Commands Every DevOps Engineer Should Memorize
+
+
+	aws sts get-caller-identity
+
+	aws ec2 describe-instances
+
+	aws s3 ls
+
+	aws s3 sync
+
+	aws iam list-users
+
+	aws ecr get-login-password
+
+	aws eks update-kubeconfig
+
+	aws autoscaling describe-auto-scaling-groups
+
+	aws cloudwatch list-metrics
+
+	aws logs tail

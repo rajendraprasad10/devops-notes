@@ -1,0 +1,139 @@
+Task: Deploy a Python Application on EKS
+
+
+Architecture
+
+
+    Developer
+        |
+        v
+    GitHub
+        |
+        v
+    Docker Image
+        |
+        v
+    Amazon ECR
+        |
+        v
+    Amazon EKS
+        |
+        +--> Deployment
+        |
+        +--> Service
+        |
+        +--> Ingress (ALB)
+
+
+Task 1: Create EKS Cluster
+
+    Create Cluster
+
+
+        eksctl create cluster \
+        --name dev-cluster \
+        --region ap-south-1 \
+        --nodegroup-name workers \
+        --node-type t3.medium \
+        --nodes 2
+
+    Verify:
+
+        kubectl get nodes
+
+
+Task 2: Create ECR Repository
+
+    aws ecr create-repository \
+        --repository-name flask-app
+
+    List:
+
+        aws ecr describe-repositories
+
+
+Task 3: Create Python App
+
+    app.py
+
+        from flask import Flask
+
+        app = Flask(__name__)
+
+        @app.route("/")
+        def home():
+            return "Hello from EKS"
+
+        app.run(host="0.0.0.0", port=5000)
+
+Task 4: Dockerize Application
+
+    Dockerfile
+
+    FROM python:3.12-slim
+
+    WORKDIR /app
+
+    COPY . .
+
+    RUN pip install -r requirements.txt
+
+    EXPOSE 5000
+
+    CMD ["python","app.py"]
+
+    
+    Build:
+
+        docker build -t flask-app .
+
+    Run locally:
+
+        docker run -p 5000:5000 flask-app
+
+
+Task 5: Push Image to ECR
+
+    Login:
+
+        aws ecr get-login-password \
+        | docker login \
+        --username AWS \
+        --password-stdin ACCOUNT_ID.dkr.ecr.ap-south-1.amazonaws.com
+
+    Tag:
+
+        docker tag flask-app:latest \
+        ACCOUNT_ID.dkr.ecr.ap-south-1.amazonaws.com/flask-app:v1
+
+    Push:
+
+        docker push \
+        ACCOUNT_ID.dkr.ecr.ap-south-1.amazonaws.com/flask-app:v1
+
+
+Task 6: Create Namespace
+
+    kubectl create ns dev
+
+Verify:
+
+    kubectl get ns
+
+
+
+
+
+Advanced EKS Tasks for Practice
+
+
+    Deploy Prometheus + Grafana on EKS.
+    Deploy ELK Stack on EKS.
+    Configure IRSA for S3 access.
+    Install ArgoCD on EKS.
+    Deploy multiple microservices with Helm.
+    Configure Cluster Autoscaler.
+    Create CI/CD using Jenkins → ECR → EKS.
+    Implement Blue/Green deployment.
+    Implement Canary deployment with Istio.
+    Deploy a production-grade application with ALB, HPA, PDB, Network Policies, and Monitoring.

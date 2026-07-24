@@ -1,0 +1,420 @@
+learnflow 
+
+
+Phase 1: Kubernetes Fundamentals (Prerequisite)
+
+Before EKS, master Kubernetes.
+
+	Cluster Architecture
+
+	Kubernetes architecture:
+
+	Control Plane
+	Worker Nodes
+	API Server
+	etcd
+	Scheduler
+	Controller Manager
+	Cloud Controller Manager
+
+
+	Workloads:
+
+	Pods
+	ReplicaSets
+	Deployments
+	StatefulSets
+	DaemonSets
+	Jobs
+	CronJobs
+
+
+	Networking:
+
+	Services
+	ClusterIP
+	NodePort
+	LoadBalancer
+	Ingress
+	CoreDNS
+	kube-proxy
+
+	Storage:
+
+	PV
+	PVC
+	StorageClass
+	Dynamic provisioning
+	Configuration
+	ConfigMaps
+	Secrets
+
+
+	Scheduling:
+
+		NodeSelector
+		Node Affinity
+		Pod Affinity
+		Anti-Affinity
+		Taints
+		Tolerations
+
+
+
+Phase 2: AWS Basics Required for EKS
+
+Learn these AWS services before EKS.
+
+	IAM
+	VPC
+	Subnets
+	Route Tables
+	NAT Gateway
+	Internet Gateway
+	Security Groups
+	NACL
+	EC2
+	EBS
+	ELB
+	Auto Scaling Groups
+	Route 53
+	CloudWatch
+	KMS
+	ECR
+	S3
+
+
+Phase 3: Amazon EKS Basics
+Cluster Creation
+
+Practice creating clusters with:
+
+	AWS Console
+	eksctl
+	Terraform
+	AWS CLI
+
+Practice:
+
+	eksctl create cluster
+	Node Groups
+
+Understand:
+
+	Managed Node Groups
+	Self-managed Node Groups
+	Fargate Profiles
+	Mixed Node Groups
+	Authentication
+
+Learn:
+
+	aws-auth ConfigMap (legacy)
+	IAM Roles
+	IAM Users
+	IAM Identity Center
+	IAM Roles for Service Accounts (IRSA)
+	kubeconfig
+
+Practice:
+
+	aws eks update-kubeconfig
+
+
+
+Phase 4: Networking in EKS
+
+	Critical interview topic.
+
+Learn:
+
+	Amazon VPC CNI
+	Pod IP allocation
+	ENI
+	Secondary IPs
+	Prefix delegation
+	Custom networking
+	Security Groups for Pods
+	Private clusters
+	Public clusters
+
+Practice:
+
+	kubectl get pods -o wide
+
+
+
+Phase 5: Storage
+
+Practice:
+
+	EBS CSI Driver
+	EFS CSI Driver
+	FSx CSI Driver
+	Persistent Volumes
+	Dynamic provisioning
+	Volume snapshots
+
+
+Phase 6: Autoscaling
+
+	One of the most important production topics.
+
+	Horizontal Pod Autoscaler (HPA)
+
+	Practice CPU-based scaling.
+
+	Vertical Pod Autoscaler (VPA)
+
+	Learn when to use it.
+
+	Cluster Autoscaler
+
+Practice:
+
+	Scale worker nodes
+	Pending Pods
+	Scale down
+	Karpenter
+
+Modern replacement for Cluster Autoscaler.
+
+Topics:
+
+	NodePools
+	EC2NodeClass
+	Spot instances
+	On-demand instances
+
+
+
+Phase 7: Load Balancing
+
+Learn:
+
+	AWS Load Balancer Controller
+	ALB
+	NLB
+	Classic Load Balancer
+	Ingress
+	IngressClass
+	Target Groups
+
+Practice exposing applications.
+
+
+Phase 8: Security
+
+Must know for senior roles.
+
+	RBAC
+	IAM Roles for Service Accounts (IRSA)
+	Pod Security Admission
+	Secrets
+	KMS encryption
+	Network Policies
+	Security Groups for Pods
+	OPA/Gatekeeper
+	Kyverno
+
+Phase 9: Observability
+
+Practice:
+
+	CloudWatch
+	Prometheus
+	Grafana
+	Fluent Bit
+	Loki
+	OpenTelemetry
+	AWS X-Ray
+
+
+Phase 10: Logging
+
+Implement:
+
+	Fluent Bit → CloudWatch
+	Fluent Bit → S3
+	Fluent Bit → OpenSearch
+	Fluent Bit → Loki
+
+
+
+Phase 11: GitOps
+
+	Tools:
+
+		Argo CD
+		FluxCD
+
+	Practice:
+
+		Auto deployment
+		Rollback
+		Sync
+		Drift detection
+
+
+
+Phase 12: CI/CD
+
+	Integrate:
+
+		Jenkins
+		GitHub Actions
+		GitLab CI
+
+	Deploy:
+
+		Code
+		 ↓
+		Docker Build
+		 ↓
+		Push to ECR
+		 ↓
+		Deploy to EKS
+
+
+Phase 13: Disaster Recovery
+
+Practice:
+
+	Cluster Backup
+	Velero
+	etcd backup concepts
+	Multi-AZ
+	Multi-region architecture
+
+
+Phase 14: Cost Optimization
+
+Learn:
+
+	Spot instances
+	Karpenter consolidation
+	Rightsizing
+	Cluster Autoscaler
+	Scale to zero
+	Reserved Instances
+	Savings Plans
+
+
+Phase 15: Production Troubleshooting
+
+Be able to troubleshoot:
+
+	Pending Pods
+	CrashLoopBackOff
+	ImagePullBackOff
+	OOMKilled
+	FailedScheduling
+	PVC Pending
+	Node NotReady
+	CoreDNS failures
+	CNI failures
+	API server connectivity
+	High CPU
+	High memory
+	Network latency
+
+
+
+Phase 16: Terraform + EKS
+
+Provision:
+
+	VPC
+	IAM
+	EKS Cluster
+	Managed Node Groups
+	Add-ons
+
+
+
+Phase 17: Helm
+
+Practice:
+
+	Install charts
+	Upgrade
+	Rollback
+	Create your own chart
+	Values files
+
+
+Phase 18: EKS Add-ons
+
+Install and manage:
+
+	VPC CNI
+	CoreDNS
+	kube-proxy
+	Metrics Server
+	EBS CSI Driver
+	EFS CSI Driver
+	AWS Load Balancer Controller
+	Cluster Autoscaler
+	Karpenter
+	ExternalDNS
+	Cert-Manager
+
+
+
+Phase 19: Advanced Production Topics
+
+
+	Blue/Green Deployments
+	Canary Deployments
+	Progressive Delivery
+	Multi-Tenant Clusters
+	Multi-Cluster Management
+	GPU Workloads
+	Batch Jobs
+	Serverless with Fargate
+	Service Mesh (Istio, Linkerd)
+
+
+Capstone Projects:
+
+These projects will give you practical experience and are excellent resume material:
+
+Deploy a Python FastAPI application to EKS using Helm and expose it with an ALB.
+
+Build a CI/CD pipeline with Jenkins or GitHub Actions to build Docker images, push them to ECR, and deploy to EKS.
+
+Implement autoscaling using HPA and Cluster Autoscaler (or Karpenter).
+
+Set up centralized logging with Fluent Bit → CloudWatch or OpenSearch.
+
+Set up monitoring with Prometheus and Grafana.
+
+Enable GitOps with Argo CD.
+
+Secure workloads using IRSA, Secrets, and Network Policies.
+
+Provision the complete infrastructure using Terraform.
+
+
+
+
+Focus on being able to explain and demonstrate:
+
+
+✅ EKS Architecture
+✅ VPC CNI
+✅ IAM & IRSA
+✅ Managed vs Self-Managed Node Groups
+✅ HPA, VPA, Cluster Autoscaler, and Karpenter
+✅ ALB Ingress Controller
+✅ EBS/EFS CSI Drivers
+✅ Fluent Bit + CloudWatch
+✅ Prometheus + Grafana
+✅ Argo CD
+✅ Helm
+✅ Terraform
+✅ ECR integration
+✅ CI/CD pipelines
+✅ Production troubleshooting
+✅ Cost optimization
+✅ Security best practices

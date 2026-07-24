@@ -23,6 +23,7 @@ Types of EBS Volumes
 
 
 Type			Use Case
+
 gp3				General purpose SSD
 io1/io2			High-performance databases
 st1				Throughput workloads
@@ -120,46 +121,93 @@ Here:
 
 	is new EBS volume.
 
+----------------------------------------
+
+Verify on Linux Instance:
+
+
+lsblk 
+
+
+		Output will be: 
+
+			nvme0n1      8G
+				├─nvme0n1p1
+				└─nvme0n1p15
+
+			nvme1n1     20G
+
+--------------------------------------------
+
+Step 4: Create Partition
+
+	sudo fdisk /dev/nvme1n1
+
+		Inside fdisk:
+
+			n
+			p
+			1
+			Enter
+			Enter
+			w
+
+			Verify:
+
+			lsblk
+
+			Output:
+
+			nvme1n1
+			└─nvme1n1p1
+
 
 -----------------------------------------------------------------------------
 
+Step 5: Format Volume
 
-Step 4 — Create Filesystem
+	sudo mkfs.ext4 /dev/nvme1n1p1
 
-Format disk:
-
-	sudo mkfs -t ext4 /dev/xvdf
+-------------------------------------------------
 
 
-----------------------------------------------------------------------------
+Step 6: Create Mount Point
 
-Step 5 — Mount EBS Volume
+	sudo mkdir /data
 
-	Create directory:
+--------------------------------------------------
 
-		sudo mkdir /data
+Step 7: Mount Volume
 
-	Mount volume:
+	sudo mount /dev/nvme1n1p1 /data
 
-		sudo mount /dev/xvdf /data
+--------------------------------------------------
 
-	Verify:
 
-		df -h
+Verify:
+
+	df -h
+
 
 
 --------------------------------------------------------------------------------
 
 
-Step 6 — Make Mount Permanent
+Step 8 — Make Mount Permanent
+
+
+	Get UUID:
+
+		sudo blkid /dev/nvme1n1p1
 
 	Open fstab:
 
-		sudo nano /etc/fstab
+		sudo vi /etc/fstab
 
 	Add:
 
-		/dev/xvdf   /data   ext4   defaults,nofail   0   2
+	UUID=a8659d8f-c5e0-4a74-b387-ab5ec40b9b86  /data  ext4  defaults,nofail  0 2
+
 
 	Save and exit.
 
@@ -275,6 +323,28 @@ Step 11 — Verify Data on New EC2
 	Check disk:
 
 		lsblk
+
+	Show the file ystem
+
+		lsblk -f
+
+	Show UUIDs
+
+		sudo blkid
+
+	Check Filesystem Type
+
+		sudo file -s /dev/nvme1n1
+
+	Check Partition Table
+
+		sudo fdisk -l /dev/nvme1n1
+
+	Filesystem Repair
+
+		sudo e2fsck -f /dev/nvme1n1
+
+	dh -h 
 
 	Mount volume:
 

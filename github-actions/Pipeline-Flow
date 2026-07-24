@@ -1,0 +1,70 @@
+                Push / Pull Request
+                        │
+                        ▼
+             Checkout Repository
+                        │
+                        ▼
+                Setup Python
+                        │
+                        ▼
+                 Restore pip Cache
+                        │
+                        ▼
+             Install Dependencies
+                        │
+                        ▼
+                Run Flake8 Lint
+                        │
+                        ▼
+                 Execute Pytest
+                        │
+                        ▼
+               Build Docker Image
+                        │
+                        ▼
+             Verify Docker Image
+                        │
+                        ▼
+                  CI Pipeline Passed
+
+
+Checkout
+    │
+    ▼
+Setup Python
+    │
+    ▼
+Install Dependencies
+    │
+    ▼
+Code Formatting (Black)
+    │
+    ▼
+Import Sorting (isort)
+    │
+    ▼
+Lint (Flake8)
+    │
+    ▼
+Static Type Check (MyPy)
+    │
+    ▼
+Unit Tests (Pytest)
+    │
+    ▼
+Coverage Report
+    │
+    ▼
+Build Docker Image
+    │
+    ▼
+Trivy Security Scan
+    │
+    ▼
+Push Docker Image (Docker Hub/GHCR)
+    │
+    ▼
+Upload Artifacts
+    │
+    ▼
+Trigger CD Pipeline

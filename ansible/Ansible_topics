@@ -1,0 +1,594 @@
+Ansible_topics
+
+
+Complete Ansible Expert Roadmap (2026)
+
+Level 1 – Ansible Fundamentals ⭐⭐⭐⭐⭐
+
+1. Ansible Architecture
+
+	Control Node
+	Managed Nodes
+	Agentless architecture
+	SSH communication
+	Python requirements
+	Inventory
+	Playbook execution flow
+	2. Installation & Configuration
+	ansible.cfg
+	inventory.ini
+	collections
+	Galaxy
+	Execution Environment
+
+Learn every configuration option inside
+
+ansible.cfg
+
+Example
+
+	forks
+	timeout
+	host_key_checking
+	pipelining
+	callbacks
+
+3. Inventory
+
+	Static Inventory
+
+	Dynamic Inventory
+
+	Nested Groups
+
+	Children Groups
+
+	Group Priority
+
+	Host Variables
+
+	Group Variables
+
+Patterns
+
+Examples
+
+	web
+	db
+	prod
+	qa
+	all
+	ungrouped
+
+Practice
+
+	web:&prod
+	web:!prod
+	web,db
+
+
+4. Ad Hoc Commands
+
+	Master every module
+
+	ping
+
+	shell
+
+	command
+
+	copy
+
+	file
+
+	service
+
+	yum
+
+	apt
+
+	user
+
+	group
+
+	cron
+
+	setup
+
+	debug
+
+Level 2 – Playbooks ⭐⭐⭐⭐⭐
+
+Learn
+
+	YAML
+	Play
+	Task
+	Handler
+	Variables
+	Facts
+	Register
+	Loops
+	Conditions
+	Blocks
+
+Master
+
+	include_tasks
+
+	import_tasks
+
+	include_role
+
+	import_role
+
+
+Level 3 – Variables ⭐⭐⭐⭐⭐
+
+Master Variable Precedence
+
+	Extra Vars
+
+	Task Vars
+
+	Block Vars
+
+	Role Vars
+
+	Host Vars
+
+	Group Vars
+
+	Role Defaults
+
+Learn
+
+	default()
+
+	mandatory()
+
+	omit
+
+	combine()
+
+	dict2items
+
+	items2dict
+
+Level 4 – Facts ⭐⭐⭐⭐⭐
+
+Understand
+
+	ansible_facts
+
+	Examples
+
+	Memory
+
+	CPU
+
+	Network
+
+	OS
+
+Hostname
+
+	Architecture
+
+	Disks
+
+Learn
+
+	gather_facts
+
+	gather_subset
+
+Level 5 – Conditionals ⭐⭐⭐⭐⭐
+
+Learn
+
+	when
+
+	failed_when
+
+	changed_when
+
+Examples
+
+	OS
+
+	RAM
+
+	CPU
+
+	Hostname
+
+	Environment
+
+	Package Installed
+
+
+Level 6 – Loops ⭐⭐⭐⭐⭐
+
+Master
+
+	loop
+
+	with_items
+
+	with_dict
+
+	with_nested
+
+	with_sequence
+
+	until
+
+	retries
+
+Level 7 – Jinja2 ⭐⭐⭐⭐⭐
+
+Everything
+
+	Variables
+
+	Filters
+
+	Tests
+
+	Loops
+
+	Conditions
+
+	Macros
+
+Templates
+
+	nginx.conf
+
+	tomcat.xml
+
+	docker-compose.yml
+
+
+Level 8 – File Management ⭐⭐⭐⭐⭐
+
+Master
+
+	copy
+
+	fetch
+
+	template
+
+	assemble
+
+	replace
+
+	lineinfile
+
+	blockinfile
+
+	stat
+
+	find
+
+
+Level 9 – Roles ⭐⭐⭐⭐⭐
+
+Learn
+
+	defaults
+
+	vars
+
+	handlers
+
+	templates
+
+	files
+
+	meta
+
+	tasks
+
+Practice
+
+	common
+
+	docker
+
+	nginx
+
+	java
+
+	tomcat
+
+	mysql
+
+	users
+
+	monitoring
+
+
+Level 10 – Execution Control ⭐⭐⭐⭐⭐
+
+Master
+
+	serial
+
+	run_once
+
+	delegate_to
+
+	throttle
+
+	strategy
+
+	free
+
+	linear
+
+	order
+
+Learn
+
+	max_fail_percentage
+
+	any_errors_fatal
+
+
+
+Level 13 – Handlers ⭐⭐⭐⭐⭐
+
+Learn
+
+	notify
+
+	listen
+
+meta: flush_handlers
+
+
+
+Level 14 – Vault ⭐⭐⭐⭐⭐
+
+	Everything
+
+	encrypt
+
+	decrypt
+
+	edit
+
+	view
+
+	rekey
+
+	vault-id
+
+	Integrate
+
+	Jenkins
+
+	GitHub Actions
+
+	Hashicorp Vault
+
+
+Level 15 – Ansible Galaxy ⭐⭐⭐⭐⭐
+
+	Learn
+
+	Install
+
+	Publish
+
+	Collections
+
+	Requirements.yml
+
+
+
+Level 16 – Dynamic Inventory ⭐⭐⭐⭐⭐
+
+	AWS
+
+	Azure
+
+	GCP
+
+	VMware
+
+	OpenStack
+
+	Kubernetes
+
+
+
+Level 17 – Custom Modules ⭐⭐⭐⭐⭐
+
+	Python
+
+	ModuleUtils
+
+	JSON
+
+	Return Values
+
+	Arguments
+
+
+
+Level 18 – Plugins ⭐⭐⭐⭐⭐
+
+Master
+
+	Lookup Plugins
+
+	Filter Plugins
+
+	Callback Plugins
+
+	Connection Plugins
+
+	Strategy Plugins
+
+
+
+Level 19 – Performance ⭐⭐⭐⭐⭐
+
+Learn
+
+	forks
+
+	pipelining
+
+	async
+
+	poll
+
+	serial
+
+	strategy
+
+	fact caching
+
+
+
+Level 20 – Testing ⭐⭐⭐⭐⭐
+
+	ansible-lint
+
+	yamllint
+
+	molecule
+
+	pytest
+
+
+
+Level 21 – Security ⭐⭐⭐⭐⭐
+
+	SSH
+
+	Vault
+
+	Secrets
+
+	RBAC
+
+	Least Privilege
+
+	Become
+
+	sudo
+
+
+Level 22 – CI/CD ⭐⭐⭐⭐⭐
+
+	Jenkins
+
+	GitHub Actions
+
+	GitLab CI
+
+	Azure DevOps
+
+Level 23 – Docker ⭐⭐⭐⭐⭐
+
+	Run
+
+	Ansible in Docker
+
+	Build
+
+	Execution Environment
+
+
+Level 24 – Kubernetes ⭐⭐⭐⭐⭐
+
+	Automate
+
+	Deployments
+
+	Namespaces
+
+	Secrets
+
+	Ingress
+
+	Helm
+
+	ConfigMaps
+
+
+Level 28 – Enterprise Deployment Strategies ⭐⭐⭐⭐⭐
+
+	Rolling Deployment
+
+	Blue-Green Deployment
+
+	Canary Deployment
+
+	Immutable Deployment
+
+	Rolling Restart
+
+	Zero Downtime Deployment
+
+	Rollback Strategy
+
+
+
+Level 30 – Real Production Scenarios ⭐⭐⭐⭐⭐
+
+Practice scenarios like:
+
+	Restart service only if config changes
+	Deploy to 1000 servers
+	Handle partial failures
+	Retry transient failures
+	Manage multiple environments
+	Rotate secrets
+	Run only changed hosts
+	Dynamic inventory in AWS
+	Blue-Green deployment
+	Disaster recovery
+	Patch Linux servers
+	Configure Kubernetes nodes
+	Deploy Java applications
+	Configure Nginx load balancers
+	SSL certificate renewal
+	User management
+	Security hardening
+	Backup and restore
+	Log rotation
+	Monitoring agent installation
+
+
+Interview Preparation Checklist
+
+By the end of your learning, you should be able to confidently answer:
+
+	100+ Ansible interview questions
+	50+ production troubleshooting scenarios
+	30+ role-based automation examples
+	20+ Vault and security questions
+	15+ CI/CD integration questions
+	10+ performance optimization questions
+	5+ architecture and design discussions
+	My recommendation for your background
+
+Given your experience, I'd prioritize topics in this order:
+
+	Roles & reusable project structure
+	Variables, facts, and Jinja2
+	Execution control and error handling
+	Vault and security
+	Jenkins + GitHub Actions integration
+	AWS dynamic inventory
+	AWX / Red Hat Ansible Automation Platform
+	Performance optimization (1000+ servers)
+	Custom modules and plugins (Python)
+	Real enterprise deployment patterns (Blue-Green, Canary, Rolling)
