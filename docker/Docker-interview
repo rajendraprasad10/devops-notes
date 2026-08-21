@@ -1,0 +1,285 @@
+How do you design a multi-stage Dockerfile for a Java / Python app?
+
+
+  Why Multi-Stage Builds?
+
+        A build environment requires:
+
+        Maven/Gradle for Java
+
+        pip, gcc, build-essential for Python
+
+        Compilers and development libraries
+
+    These are needed only during build time, not at runtime.
+
+  Without multi-stage builds:
+
+    Java + Maven + JDK + Source Code + Build Cache + Application
+
+  Result:
+
+    4 GB image
+
+  With multi-stage builds:
+
+    Builder Image
+    ↓
+    Compile
+    ↓
+    Copy artifact
+    ↓
+    Runtime Image
+
+  Result:
+
+    200 MB image
+
+
+
+Java Multi-Stage Dockerfile (Spring Boot)
+
+
+    # Stage 1: Build
+
+    FROM maven:3.9-eclipse-temurin-21 AS builder
+
+    WORKDIR /app
+
+    COPY pom.xml .
+
+    COPY src ./src
+
+    RUN mvn clean package -DskipTests
+
+
+    # Stage 2: Runtime
+
+    FROM eclipse-temurin:21-jre
+
+    WORKDIR /app
+
+    COPY --from=builder \
+         /app/target/app.jar \
+         app.jar
+
+    EXPOSE 8080
+
+    ENTRYPOINT ["java","-jar","app.jar"]
+
+
+
+
+Build Flow:-
+
+
+  Source Code
+       ↓
+   Maven Build
+       ↓
+   app.jar
+       ↓
+  Copy only JAR
+       ↓
+  JRE Runtime Image
+
+---------------------------------------------------------------------
+
+Python Multi-Stage Dockerfile
+
+Example using FastAPI.
+
+    # Stage 1
+
+    FROM python:3.12-slim AS builder
+
+    WORKDIR /build
+
+    COPY requirements.txt .
+
+    RUN pip install \
+        --no-cache-dir \
+        --prefix=/install \
+        -r requirements.txt
+
+
+    # Stage 2
+
+    FROM python:3.12-slim
+
+    WORKDIR /app
+
+    COPY --from=builder /install /usr/local
+
+    COPY . .
+
+    EXPOSE 8000
+
+    CMD ["uvicorn","main:app","--host","0.0.0.0","--port","8000"]
+
+==========================================================================
+
+
+Your Docker build is slow. How do you optimize layer caching?
+
+
+    Docker builds images layer by layer. Each Dockerfile instruction (FROM, RUN, COPY, ADD, etc.) creates a new layer. Docker reuses cached layers if the instruction and its inputs haven't changed. To optimize builds, I structure the Dockerfile so that stable layers, like dependency installation, come before frequently changing application code. I also use .dockerignore, multi-stage builds, BuildKit, and persistent cache in CI/CD to avoid rebuilding unchanged layers.
+
+    2. Correct Layer Ordering
+
+        Instead, copy dependency files first:
+
+        FROM python:3.12
+
+        WORKDIR /app
+
+        COPY requirements.txt .
+
+        RUN pip install --no-cache-dir -r requirements.txt
+
+        COPY . .
+
+        CMD ["python", "app.py"]
+
+    First Build
+
+        Layer 1 ✓ Base image
+        Layer 2 ✓ requirements.txt
+        Layer 3 ✓ pip install
+        Layer 4 ✓ Copy source
+
+
+    Second Build (only app.py changed)
+
+        Layer 1 ✓ Cache
+        Layer 2 ✓ Cache
+        Layer 3 ✓ Cache
+        Layer 4 Rebuild only
+
+    Dependency installation is skipped.
+
+
+  Optimization: 
+
+    Better Example
+      COPY pom.xml .
+
+      RUN mvn dependency:go-offline
+
+      COPY src ./src
+
+      RUN mvn clean package -DskipTests
+
+    Use .dockerignore
+
+        A large build context slows builds.
+
+        Bad:
+
+        COPY . .
+
+        includes:
+
+        .git/
+        logs/
+        venv/
+        node_modules/
+        __pycache__/
+        .idea/
+        dist/
+
+        Use a .dockerignore file:
+
+        .git
+        node_modules
+        venv
+        dist
+        __pycache__
+        *.log
+        .env
+        coverage
+
+    Combine RUN Commands
+
+    Bad:
+
+      RUN apt update
+
+      RUN apt install -y curl
+
+      RUN apt clean
+
+      Creates three layers.
+
+    Better:
+
+      RUN apt-get update && \
+          apt-get install -y curl && \
+          rm -rf /var/lib/apt/lists/*
+
+
+    Use Multi-Stage Builds
+
+
+    Enable Docker BuildKit
+
+    BuildKit provides:
+
+        Parallel execution
+        Improved caching
+        Cache mounts
+        Secret mounts
+        Inline cache export
+
+    DOCKER_BUILDKIT=1 docker build .
+
+    RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install -r requirements.txt
+
+
+
+
+How do you pass build-time vs run-time variables?
+
+
+  docker build \
+    --build-arg APP_VERSION=1.5.2 \
+    -t myapp .
+
+  docker run myapp env
+
+  Override Runtime Variables
+  
+  docker run \
+      -e LOG_LEVEL=DEBUG \
+      myapp
+
+  ARG is used for build-time configuration and exists only during the image build. It's suitable for values like dependency versions, build profiles, or base image tags. ENV is used for runtime configuration and is available to the application when the container starts. Runtime values can be overridden with docker run -e, Docker Compose environment variables, or Kubernetes ConfigMaps and Secrets. I never store secrets in ARG or ENV; instead, I use a dedicated secret management solution such as Kubernetes Secrets, Vault, or a cloud secrets manager. This keeps the image immutable, secure, and portable.
+
+
+=====================================================================
+
+
+How do you prevent secrets from being baked into images?
+
+
+How do you debug a failed Docker build step?
+
+
+How do you enforce best practices in Dockerfiles across teams?
+
+
+
+
+How do you pin base image versions to avoid breaking changes?
+
+
+  Pin Base Image Versions
+
+    Avoid:
+
+    FROM python:latest
+
+    Better:
+
+    FROM python:3.12-slim
